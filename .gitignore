@@ -1,0 +1,12 @@
+build/
+.idea
+cmake-build-*
+asteroid/.vs
+asteroid/debug
+asteroid/release
+asteroid/tmp
+*.obj
+*.user
+*.stash
+*.pdb
+*.tlog

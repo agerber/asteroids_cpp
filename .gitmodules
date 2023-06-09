@@ -1,0 +1,3 @@
+[submodule "3rdparty/Streams"]
+	path = 3rdparty/Streams
+	url = git@github.com:jscheiny/Streams.git
