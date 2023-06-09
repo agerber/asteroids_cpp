@@ -88,7 +88,7 @@ void GamePanel::drawNumFrame(QPainter* painter)
 {
     painter->setFont(fontNormal);
     painter->setPen(Qt::white);
-    painter->drawText(fontWidth, Game::DIM.height() - (fontHeight + 22), "FRAME :  " + QString::number(CommandCenter::getInstance()->getFrame()));
+    painter->drawText(fontWidth, Game::DIM.height() - (fontHeight + 22), "CPP :  " + QString::number(CommandCenter::getInstance()->getFrame()));
 }
 
 void GamePanel::drawMeters(QPainter* painter)
