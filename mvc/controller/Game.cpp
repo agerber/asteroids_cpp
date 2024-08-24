@@ -2,7 +2,6 @@
 #include <QApplication>
 #include <QScreen>
 #include <QKeyEvent>
-#include "game.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -12,7 +11,7 @@
 #include "qglobal.h"
 
 #include "Utils.h"
-#include "newwallFloater.h"
+#include "NewWallFloater.h"
 #include "ShieldFloater.h"
 #include "NukeFloater.h"
 #include "WhiteCloudDebris.h"

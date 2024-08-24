@@ -1,4 +1,4 @@
-#include "nuke.h"
+#include "Nuke.h"
 
 #include <cmath>
 #include <QPainter>

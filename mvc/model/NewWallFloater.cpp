@@ -1,4 +1,4 @@
-#include "newwallFloater.h"
+#include "NewWallFloater.h"
 
 NewWallFloater::NewWallFloater()
 {

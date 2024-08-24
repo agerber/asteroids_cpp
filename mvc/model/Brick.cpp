@@ -1,4 +1,3 @@
-#pragma once
 #include <QPoint>
 #include <QImage>
 #include <map>
