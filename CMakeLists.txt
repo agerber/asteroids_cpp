@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.9)
 
 #set(CMAKE_OSX_ARCHITECTURES=arm64)
 #set(CMAKE_REQUIRED_LINK_OPTIONS "-arch;arm64")
@@ -5,8 +6,6 @@
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(asteroid)
-
-cmake_minimum_required(VERSION 3.9)
 
 #set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")
 #set(CMAKE_PREFIX_PATH "/Users/macbook/Qt/6.6.0/macos/lib/cmake")

@@ -1,4 +1,4 @@
-#include "whiteclouddebris.h"
+#include "WhiteCloudDebris.h"
 
 WhiteCloudDebris::WhiteCloudDebris(Sprite* explodingSprite)
 {
