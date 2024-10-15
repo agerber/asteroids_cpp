@@ -1,6 +1,33 @@
 #include "Floater.h"
 #include "CommandCenter.h"
 #include "utils.h"
+#include <vector>
+
+Floater::Floater() : Sprite() {
+    setTeam(Team::FLOATER);
+
+    setExpiry(250);
+    setColor(sf::Color::White);
+    setRadius(50);
+    setDeltaX(somePosNegValue(10));
+    setDeltaY(somePosNegValue(10));
+    setSpin(somePosNegValue(10));
+
+    std::vector<sf::Vector2f> points{
+        {5, 5}, {4, 0}, {5, -5}, {0, -4},
+        {-5, -5}, {-4, 0}, {-5, 5}, {0, 4}
+    };
+    setCartesians(points);
+}
+
+void Floater::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    renderVector(target);
+}
+
+/**
+#include "Floater.h"
+#include "CommandCenter.h"
+#include "utils.h"
 
 #include <QPoint>
 
@@ -29,3 +56,4 @@ Floater::Floater() : Sprite() {
 void Floater::draw(QPainter &painter) {
     renderVector(painter);
 }
+**/

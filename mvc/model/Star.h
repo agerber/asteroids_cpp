@@ -1,6 +1,28 @@
 #ifndef STAR_H
 #define STAR_H
 
+
+
+#include <SFML/Graphics.hpp>
+#include "Movable.h"
+
+class Star : public Movable {
+public:
+    Star();
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    sf::Vector2f getCenter() const override;
+    int getRadius() const override;
+    Movable::Team getTeam() const override;
+    bool isProtected() const override;
+    void move() override;
+
+private:
+    sf::Vector2f center;
+    sf::Color color;
+};
+
+
+/**
 #include <QObject>
 #include <QPoint>
 #include <QColor>
@@ -24,5 +46,6 @@ private:
     QPoint center;
     QColor color;
 };
+**/
 
 #endif // STA

@@ -1,4 +1,74 @@
 #include "Asteroid.h"
+#include <cmath>
+#include <random>
+#include <algorithm>
+
+Asteroid::Asteroid(int size) {
+    if (size == 0) setRadius(LARGE_RADIUS);
+    else setRadius(LARGE_RADIUS / (size * 2));
+
+    setCartesians(generateVertices());
+}
+
+Asteroid::Asteroid(Asteroid& astExploded) : Asteroid(astExploded.getSize() + 1) {
+    setCenter(astExploded.getCenter());
+    int newSmallerSize = astExploded.getSize() + 1;
+    setDeltaX(astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSmallerSize * 2));
+    setDeltaY(astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSmallerSize * 2));
+}
+
+int Asteroid::getSize() {
+    if (getRadius() == LARGE_RADIUS) return 0;
+    else if (getRadius() == LARGE_RADIUS / 2) return 1;
+    else if (getRadius() == LARGE_RADIUS / 4) return 2;
+    return 0;
+}
+
+std::vector<sf::Vector2f> Asteroid::generateVertices() {
+    static std::mt19937 rng(std::random_device{}());
+
+    constexpr float MAX_RADIANS = 6.283f;
+    constexpr float PRECISION = 100.0f;
+
+    auto polarPointSupplier = []() {
+        static std::mt19937 rng(std::random_device{}());
+        std::uniform_real_distribution<float> distR(0.8f, 1.0f);
+        std::uniform_real_distribution<float> distTheta(0.0f, MAX_RADIANS);
+        return PolarPoint(distR(rng), distTheta(rng));
+    };
+
+    auto polarToCartesian = [](const PolarPoint& pp) {
+        float x = pp.getR() * PRECISION * std::sin(pp.getTheta());
+        float y = pp.getR() * PRECISION * std::cos(pp.getTheta());
+        return sf::Vector2f(x, y);
+    };
+
+    //int verticesCount = std::uniform_int_distribution<int>(25, 31)(std::mt19937(std::random_device{}()));
+    std::uniform_int_distribution<int> dist(25, 31);
+    int verticesCount = dist(rng);
+
+    std::vector<PolarPoint> polarPoints(verticesCount);
+    std::generate(polarPoints.begin(), polarPoints.end(), polarPointSupplier);
+
+    std::sort(polarPoints.begin(), polarPoints.end(),
+              [](const PolarPoint& p1, const PolarPoint& p2) {
+                  return p1.getTheta() < p2.getTheta();
+              });
+
+    std::vector<sf::Vector2f> cartesianPoints(verticesCount);
+    std::transform(polarPoints.begin(), polarPoints.end(), cartesianPoints.begin(), polarToCartesian);
+
+    return cartesianPoints;
+}
+
+void Asteroid::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    const sf::Texture& texture = getRasterMap().at(0);
+    renderRaster(target, texture);
+}
+
+
+/**
+#include "Asteroid.h"
 #include "Game.h"  //include necessary header files
 #include <cmath>
 #include "Global.h"
@@ -103,3 +173,4 @@ QVector<QPoint> Asteroid::generateVertices(){
 void Asteroid::draw(QPainter &painter) {
     renderVector(painter);
 }
+**/

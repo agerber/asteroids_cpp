@@ -1,4 +1,163 @@
 #include "GamePanel.h"
+#include "CommandCenter.h"
+#include "Utils.h"
+#include <iostream>
+
+GamePanel::GamePanel(const sf::Vector2u& size) {
+    // Initialize ship points
+    pntShipsRemaining = {
+        {0, 9}, {-1, 6}, {-1, 3}, {-4, 1}, {4, 1}, {-4, 1},
+        {-4, -2}, {-1, -2}, {-1, -9}, {-1, -2}, {-4, -2},
+        {-10, -8}, {-5, -9}, {-7, -11}, {-4, -11}, {-2, -9},
+        {-2, -10}, {-1, -10}, {-1, -9}, {1, -9}, {1, -10},
+        {2, -10}, {2, -9}, {4, -11}, {7, -11}, {5, -9},
+        {10, -8}, {4, -2}, {1, -2}, {1, -9}, {1, -2},
+        {4, -2}, {4, 1}, {1, 3}, {1, 6}, {0, 9}
+    };
+
+    // Load fonts
+    if (!fontNormal.loadFromFile("resources/fonts/SansSerif.ttf") ||
+        !fontBig.loadFromFile("resources/fonts/SansSerif.ttf")) {
+        std::cerr << "Error loading fonts" << std::endl;
+    }
+
+    text.setFont(fontNormal);
+    text.setCharacterSize(12);
+}
+
+GamePanel::~GamePanel() {
+    pntShipsRemaining.clear();
+}
+
+void GamePanel::setGameParent(Game* pGame) {
+    m_parentGame = pGame;
+}
+
+void GamePanel::handleInput(const sf::Event& event) {
+    if (event.type == sf::Event::KeyPressed) {
+        m_parentGame->keyPressEvent(event);
+    } else if (event.type == sf::Event::KeyReleased) {
+        m_parentGame->keyReleaseEvent(event);
+    }
+}
+
+void GamePanel::update() {
+    // Update logic can go here
+}
+
+void GamePanel::render(sf::RenderWindow& window) {
+    window.clear(sf::Color::Black);
+
+    drawNumFrame(window);
+
+    if (CommandCenter::getInstance()->isGameOver()) {
+        displayTextOnScreen(window, {
+                                        "GAME OVER",
+                                        "Use the arrow keys to turn and thrust",
+                                        "Press space to fire",
+                                        "'S' to Start", "'P' to Pause",
+                                        "'Q' to Quit", "'M' to toggle music"
+                                    });
+    } else if (CommandCenter::getInstance()->getPaused()) {
+        displayTextOnScreen(window, { "Game Paused" });
+    } else {
+        moveDrawMovables(window, CommandCenter::getInstance()->getMovDebris());
+        moveDrawMovables(window, CommandCenter::getInstance()->getMovFloaters());
+        moveDrawMovables(window, CommandCenter::getInstance()->getMovFoes());
+        moveDrawMovables(window, CommandCenter::getInstance()->getMovFriends());
+
+        drawNumberShipsRemaining(window);
+        drawMeters(window);
+        drawFalconStatus(window);
+    }
+
+    window.display();
+}
+
+void GamePanel::drawNumFrame(sf::RenderWindow& window) {
+    text.setString("CPP : " + std::to_string(CommandCenter::getInstance()->getFrame()));
+    text.setPosition(10, window.getSize().y - 30);
+    window.draw(text);
+}
+
+void GamePanel::drawMeters(sf::RenderWindow& window) {
+    int shieldValue = CommandCenter::getInstance()->getFalcon()->getShield() / 2;
+    int nukeValue = CommandCenter::getInstance()->getFalcon()->getNukeMeter() / 6;
+    drawOneMeter(window, sf::Color::Cyan, 1, shieldValue);
+    drawOneMeter(window, sf::Color::Yellow, 2, nukeValue);
+}
+
+void GamePanel::drawOneMeter(sf::RenderWindow& window, sf::Color color, int offSet, int percent) {
+    sf::RectangleShape meter(sf::Vector2f(percent, 10));
+    meter.setFillColor(color);
+    meter.setPosition(window.getSize().x - (100 + 120 * offSet), window.getSize().y - 45);
+    window.draw(meter);
+}
+
+void GamePanel::moveDrawMovables(sf::RenderWindow& window, std::vector<Movable*>& teams) {
+    for (auto* team : teams) {
+        team->move();
+        team->draw(window, sf::RenderStates::Default);
+    }
+}
+
+void GamePanel::drawNumberShipsRemaining(sf::RenderWindow& window) {
+    int numFalcons = CommandCenter::getInstance()->getNumFalcons();
+    while (numFalcons > 0) {
+        drawOneShip(window, numFalcons--);
+    }
+}
+
+void GamePanel::drawOneShip(sf::RenderWindow& window, int offSet) {
+    sf::CircleShape shipShape(10);
+    shipShape.setFillColor(sf::Color(255, 165, 0));  // Orange color
+    shipShape.setPosition(window.getSize().x - (27 * offSet), window.getSize().y - 45);
+    window.draw(shipShape);
+}
+
+void GamePanel::displayTextOnScreen(sf::RenderWindow& window, const std::vector<std::string>& text) {
+    sf::Font font;
+    if (!font.loadFromFile("resources/fonts/SansSerif.ttf")) {
+        // Handle font loading error
+        return;
+    }
+
+    sf::Text sfText;
+    sfText.setFont(font);
+    sfText.setCharacterSize(24);  // Example size, adjust as needed
+    sfText.setFillColor(sf::Color::White);
+
+    int spacer = 0;
+
+    for (const auto& line : text) {
+        sfText.setString(line);
+
+        // Calculate centered position
+        float x = (window.getSize().x - sfText.getGlobalBounds().width) / 2;
+        float y = window.getSize().y / 4 + spacer;
+
+        sfText.setPosition(x, y);
+        window.draw(sfText);
+
+        spacer += 40;
+    }
+}
+
+void GamePanel::drawFalconStatus(sf::RenderWindow& window) {
+    text.setString("Score: " + std::to_string(CommandCenter::getInstance()->getScore()));
+    text.setPosition(10, 10);
+    window.draw(text);
+
+    text.setString("Level: " + std::to_string(CommandCenter::getInstance()->getLevel()));
+    text.setPosition(20, 30);
+    window.draw(text);
+}
+
+
+
+
+/**
+#include "GamePanel.h"
 #include <QPainter>
 #include <QApplication>
 //#include <QDesktopWidget>
@@ -279,3 +438,4 @@ void GamePanel::drawFalconStatus(QPainter &painter)
     if (statusArray.size() > 0)
         displayTextOnScreen(&painter, statusArray);
 }
+**/

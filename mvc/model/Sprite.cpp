@@ -2,6 +2,182 @@
 #include "CommandCenter.h"
 #include "Game.h"
 #include "Utils.h"
+#include <cmath>
+#include <iostream>
+
+Sprite::Sprite() {
+    spin = 0;
+    deltaX = deltaY = 0;
+    radius = 0;
+    orientation = 0;
+    expiry = 0;
+
+    setCenter(sf::Vector2f(rand() % Game::DIM.x, rand() % Game::DIM.y));
+}
+
+void Sprite::setCenter(sf::Vector2f center) {
+    this->center = center;
+}
+
+sf::Vector2f Sprite::getCenter() const {
+    return center;
+}
+
+void Sprite::setDeltaX(double deltaX) {
+    this->deltaX = deltaX;
+}
+
+double Sprite::getDeltaX() const {
+    return deltaX;
+}
+
+void Sprite::setDeltaY(double deltaY) {
+    this->deltaY = deltaY;
+}
+
+double Sprite::getDeltaY() const {
+    return deltaY;
+}
+
+void Sprite::setTeam(Movable::Team team_in) {
+    team = team_in;
+}
+
+Movable::Team Sprite::getTeam() const {
+    return team;
+}
+
+void Sprite::setRadius(int radius) {
+    this->radius = radius;
+}
+
+int Sprite::getRadius() const {
+    return radius;
+}
+
+void Sprite::setOrientation(int orientation) {
+    this->orientation = orientation;
+}
+
+int Sprite::getOrientation() {
+    return orientation;
+}
+
+void Sprite::setExpiry(int expiry) {
+    this->expiry = expiry;
+}
+
+int Sprite::getExpiry() const {
+    return expiry;
+}
+
+void Sprite::setSpin(int spin) {
+    this->spin = spin;
+}
+
+int Sprite::getSpin() const {
+    return spin;
+}
+
+void Sprite::setCartesians(const std::vector<sf::Vector2f>& points) {
+    cartesians = points;
+}
+
+std::vector<sf::Vector2f> Sprite::getCartesians() {
+    return cartesians;
+}
+
+void Sprite::setColor(sf::Color color) {
+    this->color = color;
+}
+
+sf::Color Sprite::getColor() const {
+    return color;
+}
+
+void Sprite::setRasterMap(const std::map<int, sf::Texture>& map) {
+    rasterMap = map;
+}
+
+const std::map<int, sf::Texture>& Sprite::getRasterMap() const {
+    return rasterMap;
+}
+
+void Sprite::move() {
+    if (center.x > Game::DIM.x)
+        center.x = 1;
+    else if (center.x < 0)
+        center.x = Game::DIM.x - 1;
+
+    if (center.y > Game::DIM.y)
+        center.y = 1;
+    else if (center.y < 0)
+        center.y = Game::DIM.y - 1;
+
+
+    center.x += deltaX;
+    center.y += deltaY;
+
+    if (expiry > 0) expire();
+    if (spin != 0) setOrientation(getOrientation() + spin);
+}
+
+bool Sprite::isProtected() const {
+    return false;
+}
+
+sf::Texture Sprite::loadGraphic(const std::string& imagePath) {
+    sf::Texture texture;
+    if (!texture.loadFromFile(imagePath)) {
+        std::cerr << "Error: couldn't load image at " << imagePath << std::endl;
+    }
+    return texture;
+}
+
+void Sprite::renderRaster(sf::RenderTarget& target, const sf::Texture& texture) const {
+    renderRaster(target, texture, getRadius() * 2);
+}
+
+void Sprite::renderRaster(sf::RenderTarget& target, const sf::Texture& texture, int diam) const {
+    sf::Sprite sprite(texture);
+    sprite.setOrigin(texture.getSize().x / 2, texture.getSize().y / 2);
+    sprite.setPosition(center);
+    sprite.setScale(static_cast<float>(diam) / texture.getSize().x,
+                    static_cast<float>(diam) / texture.getSize().y);
+    target.draw(sprite);
+}
+
+void Sprite::renderVector(sf::RenderTarget& target) const {
+    sf::VertexArray polygon(sf::LineStrip, cartesians.size() + 1);
+
+    for (size_t i = 0; i < cartesians.size(); ++i) {
+        polygon[i].position = sf::Vector2f(cartesians[i].x + center.x,
+                                           center.y - cartesians[i].y);
+        polygon[i].color = color;
+    }
+    polygon[cartesians.size()] = polygon[0];  // Close the loop
+
+    target.draw(polygon);
+}
+
+int Sprite::somePosNegValue(int seed) {
+    int randomNumber = rand() % seed;
+    return (randomNumber % 2 == 0) ? randomNumber : -randomNumber;
+}
+
+void Sprite::expire() {
+    if (expiry == 1) {
+        CommandCenter::getInstance()->getOpsQueue()->enqueue(this, GameOp::Action::REMOVE);
+    }
+    expiry--;
+}
+
+
+/**
+#include "Sprite.h"
+#include "CommandCenter.h"
+#include "Game.h"
+#include "Utils.h"
 #include "Stream.h"
 
 #include <QPainter>
@@ -289,4 +465,4 @@ void Sprite::expire()
 }
 
 
-  
+**/

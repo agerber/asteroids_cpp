@@ -1,6 +1,20 @@
 #ifndef POLARPOINT_H
 #define POLARPOINT_H
 
+class PolarPoint {
+public:
+    // corresponds to the hypotenuse in Cartesian coordinates, number between 0 and 1
+    float r;
+    // degrees in radians, number between 0 and 6.283
+    float theta;
+
+    PolarPoint(float _r = 0.0f, float _theta = 0.0f);
+
+    float getTheta() const { return theta; }
+    float getR() const { return r; }
+};
+
+/**
 #include <QPoint>
 
 class PolarPoint {
@@ -20,5 +34,6 @@ public:
     qreal getR() { return r; }
 
 };
+**/
 
 #endif // POLARPOINT_H

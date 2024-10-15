@@ -1,6 +1,68 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <thread>
+#include <atomic>
+#include "GamePanel.h"
+#include "CommandCenter.h"
+#include "Brick.h"
+#include "Asteroid.h"
+#include "Floater.h"
+#include "WhiteCloudDebris.h"
+#include "ShieldFloater.h"
+#include "NewWallFloater.h"
+#include "NukeFloater.h"
+#include "Bullet.h"
+#include "Nuke.h"
+
+class GamePanel;
+
+class Game {
+public:
+    static const sf::Vector2u DIM;
+    static const int ANIMATION_DELAY;
+    static const int FRAMES_PER_SECOND;
+
+    Game();
+    ~Game();
+
+    void run();
+    void stop();
+
+    void handleEvent(const sf::Event& event);
+    void update();
+    void render(sf::RenderWindow& window);
+
+    void keyPressEvent(const sf::Event &event);
+    void keyReleaseEvent(const sf::Event &event);
+private:
+    void checkFloaters();
+    void checkCollisions();
+    void processGameOpsQueue();
+
+    void buildWall();
+    void spawnNewWallFloater();
+    void spawnShieldFloater();
+    void spawnNukeFloater();
+    void spawnBigAsteroids(int num);
+    void spawnSmallerAsteroidsOrDebris(Asteroid* originalAsteroid);
+
+    bool isBrickFree();
+    bool isLevelClear();
+    void checkNewLevel();
+
+    std::thread animationThread;
+    std::atomic<bool> running;
+
+    GamePanel* m_pGamePanel;
+    sf::SoundBuffer soundThrustBuffer;
+    sf::SoundBuffer soundBackgroundBuffer;
+    sf::Sound soundThrust;
+    sf::Sound soundBackground;
+};
+/**
 #include <QMainWindow>
 #include <QKeyEvent>
 #include "GamePanel.h"
@@ -99,5 +161,6 @@ private:
     QSoundEffect* soundThrust;
     QSoundEffect* soundBackground;
 };
+**/
 
 #endif // GAME_H

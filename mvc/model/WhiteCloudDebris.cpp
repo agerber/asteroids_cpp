@@ -1,3 +1,42 @@
+#include "WhiteCloudDebris.h"
+
+WhiteCloudDebris::WhiteCloudDebris(Sprite* explodingSprite) {
+    setTeam(Movable::DEBRIS);
+
+    // Load textures for animation frames
+    sf::Texture texture;
+    for (int i = 0; i < 9; ++i) {
+        texture.loadFromFile("resources/imgs/exp/row-" + std::to_string(i / 3 + 1) +
+                             "-column-" + std::to_string(i % 3 + 1) + ".png");
+        rasterMap[i] = texture;
+    }
+
+    setRasterMap(rasterMap);
+    setExpiry(static_cast<int>(rasterMap.size()));
+
+    setSpin(explodingSprite->getSpin());
+    setCenter(explodingSprite->getCenter());
+    setDeltaX(explodingSprite->getDeltaX());
+    setDeltaY(explodingSprite->getDeltaY());
+    setRadius(static_cast<int>(explodingSprite->getRadius()));
+}
+
+void WhiteCloudDebris::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    int index = static_cast<int>(rasterMap.size() - getExpiry() - 1);
+
+    if (rasterMap.find(index) != rasterMap.end()) {
+        sf::Sprite sprite(rasterMap.at(index));
+        sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+        sprite.setPosition(getCenter());
+        sprite.setRotation(static_cast<float>(getSpin()));
+        sprite.setScale(getRadius() * 2.0f / sprite.getLocalBounds().width,
+                        getRadius() * 2.0f / sprite.getLocalBounds().height);
+        target.draw(sprite, states);
+    }
+}
+
+
+/**
 #include "whiteclouddebris.h"
 
 WhiteCloudDebris::WhiteCloudDebris(Sprite* explodingSprite)
@@ -35,3 +74,6 @@ void WhiteCloudDebris::draw(QPainter& painter) {
     int index = rasterMap.size() - getExpiry() - 1;
     renderRaster(painter, rasterMap.value(index));
 }
+
+
+**/

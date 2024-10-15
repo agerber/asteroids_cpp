@@ -3,6 +3,89 @@
 #ifndef COMMANDCENTER_H
 #define COMMANDCENTER_H
 
+
+
+#include <vector>
+#include "GameOp.h"
+#include "GameOpsQueue.h"
+#include "Falcon.h"
+#include "Star.h"
+
+// The CommandCenter is a singleton that manages the state of the game.
+class CommandCenter {
+public:
+    static CommandCenter* getInstance();
+
+    void initGame();
+    void incrementFrame();
+    void initFalconAndDecrementFalconNum();
+
+    void addOp(GameOp op);
+    GameOp* getOp();
+
+    int getNumFalcons() const;
+    void setNumFalcons(int value);
+
+    int getLevel() const;
+    void setLevel(int value);
+
+    long getScore() const;
+    void setScore(long value);
+
+    bool getPaused() const;
+    void setPaused(bool value);
+
+    bool getMuted() const;
+    void setMuted(bool value);
+
+    long getFrame() const;
+    void setFrame(long frame);
+
+    std::vector<Movable*>& getMovDebris();
+    void setMovDebris(const std::vector<Movable*>& value);
+
+    std::vector<Movable*>& getMovFriends();
+    void setMovFriends(const std::vector<Movable*>& value);
+
+    std::vector<Movable*>& getMovFoes();
+    void setMovFoes(const std::vector<Movable*>& value);
+
+    std::vector<Movable*>& getMovFloaters();
+    void setMovFloaters(const std::vector<Movable*>& value);
+
+    GameOpsQueue* getOpsQueue();
+    void setOpsQueue(GameOpsQueue* value);
+
+    Falcon* getFalcon() const;
+    Star* getStar() const;
+
+    bool isGameOver();
+
+private:
+    CommandCenter();
+    ~CommandCenter();
+
+    void clearAll();
+    void generateStarField();
+
+    int numFalcons;
+    int level;
+    long score;
+    bool paused;
+    bool muted;
+    long frame;
+
+    Falcon* falcon;
+
+    std::vector<Movable*> movDebris;
+    std::vector<Movable*> movFriends;
+    std::vector<Movable*> movFoes;
+    std::vector<Movable*> movFloaters;
+
+    GameOpsQueue* opsQueue;
+};
+
+/**
 #include <QVector>
 #include <QTimer>
 #include "GameOp.h"
@@ -102,5 +185,8 @@ signals:
     //signal emitted when the game is over
     void gameOver();
 };
+**/
+
+
 
 #endif // COMMANDCENTER_H

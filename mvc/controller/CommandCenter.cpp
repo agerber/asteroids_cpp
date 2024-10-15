@@ -1,3 +1,183 @@
+
+#include "CommandCenter.h"
+#include "Game.h"
+#include <iostream>
+#include <climits>
+#include <cstdlib>
+
+CommandCenter* CommandCenter::getInstance() {
+    static CommandCenter instance;
+    return &instance;
+}
+
+CommandCenter::CommandCenter()
+    : numFalcons(4), level(0), score(0), paused(false), muted(false), frame(0),
+    falcon(new Falcon()), opsQueue(new GameOpsQueue()) {}
+
+CommandCenter::~CommandCenter() {
+    delete falcon;
+    delete opsQueue;
+}
+
+void CommandCenter::initGame() {
+    clearAll();
+    generateStarField();
+    setLevel(0);
+    setScore(0);
+    setPaused(false);
+    setNumFalcons(4);
+    initFalconAndDecrementFalconNum();
+    addOp(GameOp(falcon, GameOp::Action::ADD));
+}
+
+void CommandCenter::incrementFrame() {
+    frame = frame < LONG_MAX ? frame + 1 : 0;
+}
+
+void CommandCenter::initFalconAndDecrementFalconNum() {
+    if (--numFalcons < 1) return;
+
+    falcon->setShield(Falcon::INITIAL_SPAWN_TIME);
+    falcon->setInvisible(Falcon::INITIAL_SPAWN_TIME / 4);
+    falcon->setCenter(sf::Vector2f(Game::DIM.x / 2.0f, Game::DIM.y / 2.0f));
+    falcon->setOrientation(rand() % 360);
+    falcon->setDeltaX(0);
+    falcon->setDeltaY(0);
+    falcon->setRadius(Falcon::MIN_RADIUS);
+    falcon->setMaxSpeedAttained(false);
+    falcon->setNukeMeter(0);
+}
+
+void CommandCenter::addOp(GameOp op) {
+    opsQueue->enqueue(op);
+}
+
+GameOp* CommandCenter::getOp() {
+    return opsQueue->dequeue();
+}
+
+int CommandCenter::getNumFalcons() const {
+    return numFalcons;
+}
+
+void CommandCenter::setNumFalcons(int value) {
+    numFalcons = value;
+}
+
+int CommandCenter::getLevel() const {
+    return level;
+}
+
+void CommandCenter::setLevel(int value) {
+    level = value;
+}
+
+long CommandCenter::getScore() const {
+    return score;
+}
+
+void CommandCenter::setScore(long value) {
+    score = value;
+}
+
+bool CommandCenter::getPaused() const {
+    return paused;
+}
+
+void CommandCenter::setPaused(bool value) {
+    paused = value;
+}
+
+bool CommandCenter::getMuted() const {
+    return muted;
+}
+
+void CommandCenter::setMuted(bool value) {
+    muted = value;
+}
+
+long CommandCenter::getFrame() const {
+    return frame;
+}
+
+void CommandCenter::setFrame(long frame_in) {
+    frame = frame_in;
+}
+
+std::vector<Movable*>& CommandCenter::getMovDebris() {
+    return movDebris;
+}
+
+void CommandCenter::setMovDebris(const std::vector<Movable*>& value) {
+    movDebris = value;
+}
+
+std::vector<Movable*>& CommandCenter::getMovFriends() {
+    return movFriends;
+}
+
+void CommandCenter::setMovFriends(const std::vector<Movable*>& value) {
+    movFriends = value;
+}
+
+std::vector<Movable*>& CommandCenter::getMovFoes() {
+    return movFoes;
+}
+
+void CommandCenter::setMovFoes(const std::vector<Movable*>& value) {
+    movFoes = value;
+}
+
+std::vector<Movable*>& CommandCenter::getMovFloaters() {
+    return movFloaters;
+}
+
+void CommandCenter::setMovFloaters(const std::vector<Movable*>& value) {
+    movFloaters = value;
+}
+
+GameOpsQueue* CommandCenter::getOpsQueue() {
+    return opsQueue;
+}
+
+void CommandCenter::setOpsQueue(GameOpsQueue* value) {
+    opsQueue = value;
+}
+
+Falcon* CommandCenter::getFalcon() const {
+    return falcon;
+}
+
+Star* CommandCenter::getStar() const {
+    for (auto* m : movDebris) {
+        if (auto* star = dynamic_cast<Star*>(m)) {
+            return star;
+        }
+    }
+    return nullptr;
+}
+
+void CommandCenter::clearAll() {
+    movDebris.clear();
+    movFriends.clear();
+    movFoes.clear();
+    movFloaters.clear();
+}
+
+void CommandCenter::generateStarField() {
+    for (int i = 0; i < 100; ++i) {
+        Star* star = new Star();
+        addOp(GameOp(star, GameOp::Action::ADD));
+    }
+}
+
+bool CommandCenter::isGameOver() {
+    return numFalcons < 1;
+}
+
+
+
+/**
 //commandcenter.cpp
 
 #include "CommandCenter.h"
@@ -244,3 +424,4 @@ void CommandCenter::generateStarField()
 bool CommandCenter::isGameOver()  {
     return numFalcons < 1;
 }
+**/

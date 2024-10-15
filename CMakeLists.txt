@@ -1,31 +1,41 @@
-
-#set(CMAKE_OSX_ARCHITECTURES=arm64)
-#set(CMAKE_REQUIRED_LINK_OPTIONS "-arch;arm64")
-#set(CMAKE_CXX_STANDARD 17)
-#set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-project(asteroid)
-
 cmake_minimum_required(VERSION 3.9)
 
-#set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")
-#set(CMAKE_PREFIX_PATH "/Users/macbook/Qt/6.6.0/macos/lib/cmake")
+# Set the project name
+project(asteroid)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Multimedia)
+# Ensure we are using at least C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
+# Find the SFML package
+find_package(SFML 2.5 COMPONENTS graphics window system audio REQUIRED)
 
+# Gather source files
 file(GLOB MVC_SRCS mvc/view/*.cpp
         mvc/controller/*.cpp
         mvc/model/*.cpp)
 
-add_executable(asteroid asteroid/main.cpp ${MVC_SRCS} asteroid/asteroid.qrc)
-target_link_libraries(asteroid Qt::Core Qt::Widgets Qt::Multimedia)
+# Create the executable
+add_executable(asteroid asteroid/main.cpp ${MVC_SRCS}
+    mvc/model/ShieldFloater.h mvc/model/ShieldFloater.cpp
+    mvc/model/whiteclouddebris.h mvc/model/Asteroid.h
+    mvc/model/Brick.h mvc/model/Bullet.h mvc/model/Falcon.h
+    mvc/model/Floater.h mvc/model/Movable.h mvc/model/newwallFloater.h
+    mvc/model/nuke.h mvc/model/NukeFloater.h mvc/model/PolarPoint.h
+    mvc/model/Sprite.h mvc/model/Star.h
+    mvc/controller/CommandCenter.h mvc/controller/Game.h
+    mvc/controller/GameOp.h mvc/controller/GameOpsQueue.h
+    mvc/controller/SoundRunnable.h
+    mvc/controller/utils.h mvc/view/GameFrame.h mvc/view/GamePanel.h)
+
+# Link SFML libraries to the executable
+target_link_libraries(asteroid sfml-graphics sfml-window sfml-system sfml-audio)
+
+# Include directories
 target_include_directories(asteroid PRIVATE
-        mvc/controller
-        mvc/model
-        mvc/view
-        asteroid
-        3rdparty/Streams/source)
+    mvc/controller
+    mvc/model
+    mvc/view
+    asteroid
+    3rdparty/Streams/source
+    ${SFML_INCLUDE_DIRS})

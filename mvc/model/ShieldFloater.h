@@ -3,6 +3,24 @@
 
 #include "Floater.h"
 #include "Game.h"
+#include <SFML/Graphics/Color.hpp>
+
+class ShieldFloater : public Floater {
+public:
+    // Spawn every 25 seconds
+    static int SPAWN_SHIELD_FLOATER;
+
+    ShieldFloater() {
+        setColor(sf::Color::Cyan);
+        setExpiry(260);
+    }
+};
+
+
+
+/**
+#include "Floater.h"
+#include "Game.h"
 #include <QColor>
 
 class ShieldFloater : public Floater {
@@ -15,5 +33,6 @@ public:
     }
 };
 int ShieldFloater::SPAWN_SHIELD_FLOATER = Game::FRAMES_PER_SECOND * 25;
+**/
 
 #endif // SHIELDFLOATER_H

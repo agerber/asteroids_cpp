@@ -1,5 +1,60 @@
 #include "nuke.h"
 
+#include "Utils.h"
+#include <cmath>
+
+Nuke::Nuke(Falcon* falcon) {
+    setCenter(falcon->getCenter());
+    setColor(sf::Color::Yellow);
+    setExpiry(EXPIRE);
+    setRadius(0);
+    setTeam(Team::FRIEND);
+
+    const double FIRE_POWER = 11.0;
+    double vectorX = std::cos(Utils::my_qDegreesToRadians(static_cast<float>(falcon->getOrientation()))) * FIRE_POWER;
+    double vectorY = std::sin(Utils::my_qDegreesToRadians(falcon->getOrientation())) * FIRE_POWER;
+
+    setDeltaX(falcon->getDeltaX() + vectorX);
+    setDeltaY(falcon->getDeltaY() + vectorY);
+}
+
+void Nuke::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    sf::CircleShape circle(getRadius());
+    circle.setOrigin(getRadius(), getRadius());
+    circle.setPosition(getCenter());
+    circle.setOutlineColor(getColor());
+    circle.setOutlineThickness(1.0f);
+    circle.setFillColor(sf::Color::Transparent);
+    target.draw(circle, states);
+}
+
+bool Nuke::isProtected() const {
+    return true;
+}
+
+void Nuke::move() {
+    Sprite::move();
+    if (getExpiry() % (EXPIRE / 6) == 0) nukeState++;
+
+    switch (nukeState) {
+    case 0:
+        setRadius(2);
+        break;
+    case 1:
+    case 2:
+    case 3:
+        setRadius(getRadius() + 16);
+        break;
+    case 4:
+    case 5:
+    default:
+        setRadius(getRadius() - 22);
+        break;
+    }
+}
+
+/**
+
 #include <cmath>
 #include <QPainter>
 
@@ -57,3 +112,6 @@ void Nuke::move() {
 
     }
 }
+
+
+**/

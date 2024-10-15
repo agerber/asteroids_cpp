@@ -1,6 +1,30 @@
 #ifndef ASTEROID_H
 #define ASTEROID_H
 
+#pragma once
+
+#include "Sprite.h"
+#include <vector>
+#include <SFML/Graphics.hpp>
+#include <memory>
+#include <algorithm>
+
+class Game;  // forward declaration
+
+class Asteroid : public Sprite {  // inherits from the correct base class
+
+public:
+    Asteroid(int size);  // constructor
+    Asteroid(Asteroid& astExploded);  // overloaded constructor
+    int getSize();  // conversion method
+    std::vector<sf::Vector2f> generateVertices();  // generates random vertices
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;  // drawing function
+
+public:
+    const int LARGE_RADIUS = 110;
+};
+
+/**
 #include <vector>
 #include <iostream>
 #include <memory>
@@ -33,5 +57,6 @@ public:
     const int LARGE_RADIUS = 110; //note: use of const variable that has a value known at compilation.
 
 };
+**/
 
 #endif //ASTEROID_H

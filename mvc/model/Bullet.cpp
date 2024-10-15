@@ -1,3 +1,44 @@
+#include "Bullet.h"
+#include "Utils.h"
+#include <cmath>
+
+Bullet::Bullet(Falcon* falcon) : Sprite() {
+    setTeam(Movable::FRIEND);
+    setColor(sf::Color::Yellow);
+    setExpiry(20);
+    setRadius(6);
+
+    setCenter(falcon->getCenter());
+    setOrientation(falcon->getOrientation());
+
+    const double FIRE_POWER = 35.0;
+    double vectorX = std::cos(Utils::my_qDegreesToRadians(getOrientation())) * FIRE_POWER;
+    double vectorY = std::sin(Utils::my_qDegreesToRadians(getOrientation())) * FIRE_POWER;
+
+    setDeltaX(falcon->getDeltaX() + vectorX);
+    setDeltaY(falcon->getDeltaY() + vectorY);
+
+    const double KICK_BACK_DIVISOR = 36.0;
+    falcon->setDeltaX(falcon->getDeltaX() - vectorX / KICK_BACK_DIVISOR);
+    falcon->setDeltaY(falcon->getDeltaY() - vectorY / KICK_BACK_DIVISOR);
+
+    std::vector<sf::Vector2f> listPoints{
+        sf::Vector2f(0, 3),
+        sf::Vector2f(1, -1),
+        sf::Vector2f(0, 0),
+        sf::Vector2f(-1, -1)
+    };
+
+    setCartesians(listPoints);
+}
+
+void Bullet::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    renderVector(target);
+}
+
+
+
+/**
 #include <QColor>
 #include <QVector>
 #include <cmath>
@@ -53,3 +94,4 @@ void Bullet::draw(QPainter& painter)
 {
     renderVector(painter);
 }
+**/

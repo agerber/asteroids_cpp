@@ -1,6 +1,44 @@
 #ifndef GAMEPANEL_H
 #define GAMEPANEL_H
 
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include "Movable.h"
+#include "Game.h"
+
+class Game;
+
+
+class GamePanel {
+public:
+    GamePanel(const sf::Vector2u& size);
+    ~GamePanel();
+
+    void setGameParent(Game* pGame);
+
+    void handleInput(const sf::Event& event);
+    void update();
+    void render(sf::RenderWindow& window);
+
+private:
+    void drawFalconStatus(sf::RenderWindow& window);
+    void drawNumFrame(sf::RenderWindow& window);
+    void drawMeters(sf::RenderWindow& window);
+    void drawOneMeter(sf::RenderWindow& window, sf::Color color, int offSet, int percent);
+    void moveDrawMovables(sf::RenderWindow& window, std::vector<Movable*>& teams);
+    void drawNumberShipsRemaining(sf::RenderWindow& window);
+    void drawOneShip(sf::RenderWindow& window, int offSet);
+    void displayTextOnScreen(sf::RenderWindow& window, const std::vector<std::string>& text);
+
+    sf::Font fontNormal;
+    sf::Font fontBig;
+    sf::Text text;
+
+    std::vector<sf::Vector2f> pntShipsRemaining;
+    Game* m_parentGame;
+};
+
+/**
 #include <QWidget>
 #include <QFont>
 #include <QFontMetrics>
@@ -61,5 +99,6 @@ private:
 
     Game* m_parentGame;
 };
+**/
 
 #endif // GAMEPANEL_H

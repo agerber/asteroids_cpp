@@ -1,6 +1,20 @@
 #ifndef GAMEFRAME_H
 #define GAMEFRAME_H
 
+
+#include <SFML/Graphics.hpp>
+
+class GameFrame : public sf::RenderWindow {
+public:
+    GameFrame();
+    ~GameFrame();
+
+private:
+    void initialize();
+    void handleCloseEvent();
+};
+
+/**
 #include <QWidget>
 #include <QLayout>
 
@@ -19,5 +33,7 @@ protected:
 private:
     QVBoxLayout *layout;
 };
+**/
+
 
 #endif // GAMEFRAME_H

@@ -1,6 +1,74 @@
 #ifndef FALCON_H
 #define FALCON_H
 
+
+
+#include "Sprite.h"
+#include <SFML/Graphics.hpp>
+#include <map>
+
+class Falcon : public Sprite {
+public:
+    enum ImageState {
+        FALCON_INVISIBLE,
+        FALCON,
+        FALCON_THR,
+        FALCON_PRO,
+        FALCON_PRO_THR,
+    };
+
+    enum TurnState { IDLE, LEFT, RIGHT };
+
+public:
+    Falcon();
+
+    void move() override;
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    bool isProtected() const override;
+    void drawShield(sf::RenderTarget& target) const;
+
+    void setShield(int shield_in);
+    int getShield();
+
+    void setNukeMeter(int nukeMeter_in);
+    int getNukeMeter();
+
+    void setInvisible(int invisible_in);
+    int getInvisible();
+
+    void setMaxSpeedAttained(int maxSpeedAttained_in);
+    bool getMaxSpeedAttained();
+
+    void setShowLevel(int showLevel_in);
+    int getShowLevel();
+
+    void setThrusting(bool thrusting_in);
+    bool getThrusting();
+
+    void setTurnState(TurnState w_state);
+    TurnState getTurnState();
+
+private:
+    int shield;
+    int nukeMeter;
+    int invisible;
+    bool maxSpeedAttained;
+    int showLevel;
+    bool thrusting;
+    TurnState turnState = IDLE;
+    std::map<ImageState, sf::Texture> rasterMap;
+
+public:
+
+    const static int TURN_STEP = 11;
+    static const int INITIAL_SPAWN_TIME = 46;
+    static const int MAX_SHIELD = 200;
+    static const int MAX_NUKE = 600;
+    static const int MIN_RADIUS = 14;
+};
+
+
+/**
 #include "Sprite.h"
 #include <QMap>
 #include <QImage>
@@ -87,5 +155,6 @@ private:
     QMap<ImageState, QImage> rasterMap;
 
 };
+**/
 
 #endif // FALCON_H
