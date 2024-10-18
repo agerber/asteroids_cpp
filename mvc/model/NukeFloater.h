@@ -1,32 +1,48 @@
-#ifndef NUKEFLOATER_H
-#define NUKEFLOATER_H
+#ifndef STAR_H
+#define STAR_H
 
-#include "Floater.h"
+#include "Movable.h"
+#include "Game.h"
 #include <SFML/Graphics.hpp>
+#include <cstdlib>
 
-class NukeFloater : public Floater {
-public:
-    NukeFloater();
-    static int SPAWN_NUKE_FLOATER;
-
+class Star : public Movable {
 private:
-    sf::Color color = sf::Color(255, 255, 0);
-    int expiry = 120;
+    sf::Vector2f center;
+    sf::Color color;
+
+public:
+    // Constructor
+    Star();
+
+    // Draw method to render the star
+    void draw(sf::RenderWindow& window) override {
+        sf::CircleShape starShape(getRadius());
+        starShape.setFillColor(color);
+        starShape.setPosition(center.x - getRadius(), center.y - getRadius());
+        window.draw(starShape);
+    }
+
+    // Implementation of Movable interface methods
+    sf::Vector2f getCenter() const override {
+        return center;
+    }
+
+    int getRadius() const override {
+        return 1;
+    }
+
+    Team getTeam() const override {
+        return Team::DEBRIS;
+    }
+
+    bool isProtected() const override {
+        return false;
+    }
+
+    void move() override {
+        // Do nothing
+    }
 };
 
-
-/**
-#include "Floater.h"
-#include <QColor>
-
-class NukeFloater : public Floater {
-public:
-    NukeFloater();
-    static int SPAWN_NUKE_FLOATER;
-private:
-    QColor color = QColor(255, 255, 0);
-    int expiry = 120;
-};
-**/
-
-#endif //NUKEFLOATER_H
+#endif

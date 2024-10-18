@@ -1,176 +1,53 @@
 #include "Asteroid.h"
-#include <cmath>
-#include <random>
-#include <algorithm>
+#include "Game.h"
 
-Asteroid::Asteroid(int size) {
-    if (size == 0) setRadius(LARGE_RADIUS);
-    else setRadius(LARGE_RADIUS / (size * 2));
-
-    setCartesians(generateVertices());
-}
-
-Asteroid::Asteroid(Asteroid& astExploded) : Asteroid(astExploded.getSize() + 1) {
-    setCenter(astExploded.getCenter());
-    int newSmallerSize = astExploded.getSize() + 1;
-    setDeltaX(astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSmallerSize * 2));
-    setDeltaY(astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSmallerSize * 2));
-}
-
-int Asteroid::getSize() {
-    if (getRadius() == LARGE_RADIUS) return 0;
-    else if (getRadius() == LARGE_RADIUS / 2) return 1;
-    else if (getRadius() == LARGE_RADIUS / 4) return 2;
-    return 0;
-}
-
-std::vector<sf::Vector2f> Asteroid::generateVertices() {
-    static std::mt19937 rng(std::random_device{}());
-
-    constexpr float MAX_RADIANS = 6.283f;
-    constexpr float PRECISION = 100.0f;
-
-    auto polarPointSupplier = []() {
-        static std::mt19937 rng(std::random_device{}());
-        std::uniform_real_distribution<float> distR(0.8f, 1.0f);
-        std::uniform_real_distribution<float> distTheta(0.0f, MAX_RADIANS);
-        return PolarPoint(distR(rng), distTheta(rng));
-    };
-
-    auto polarToCartesian = [](const PolarPoint& pp) {
-        float x = pp.getR() * PRECISION * std::sin(pp.getTheta());
-        float y = pp.getR() * PRECISION * std::cos(pp.getTheta());
-        return sf::Vector2f(x, y);
-    };
-
-    //int verticesCount = std::uniform_int_distribution<int>(25, 31)(std::mt19937(std::random_device{}()));
-    std::uniform_int_distribution<int> dist(25, 31);
-    int verticesCount = dist(rng);
-
-    std::vector<PolarPoint> polarPoints(verticesCount);
-    std::generate(polarPoints.begin(), polarPoints.end(), polarPointSupplier);
-
-    std::sort(polarPoints.begin(), polarPoints.end(),
-              [](const PolarPoint& p1, const PolarPoint& p2) {
-                  return p1.getTheta() < p2.getTheta();
-              });
-
-    std::vector<sf::Vector2f> cartesianPoints(verticesCount);
-    std::transform(polarPoints.begin(), polarPoints.end(), cartesianPoints.begin(), polarToCartesian);
-
-    return cartesianPoints;
-}
-
-void Asteroid::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    const sf::Texture& texture = getRasterMap().at(0);
-    renderRaster(target, texture);
-}
-
-
-/**
-#include "Asteroid.h"
-#include "Game.h"  //include necessary header files
-#include <cmath>
-#include "Global.h"
-#include <PolarPoint.h>
-
-
-//constructor
-Asteroid::Asteroid(int size) {
-    //a size of zero is a big asteroid
-    //a size of 1 or 2 is med or small asteroid respectively. See getSize() method.
-    if (size == 0) setRadius(LARGE_RADIUS);
-    else setRadius(LARGE_RADIUS/(size * 2));
-
-    //Asteroid is FOE
-    setTeam(Movable::FOE);
-    setColor(MY_WHITE_COLOR);
-
-    //the spin will be either plus or minus 0-9
-    setSpin(somePosNegValue(10));
-    //random delta-x
-    setDeltaX(somePosNegValue(10));
-    //random delta-y
-    setDeltaY(somePosNegValue(10));
-
-    setCartesians(generateVertices());
-
-}
-
-//overloaded constructor, so we can spawn smaller asteroids from an exploding one
-Asteroid::Asteroid(Asteroid & astExploded)
-    :Asteroid(astExploded.getSize() + 1)
+Asteroid::Asteroid(const Asteroid &astExploded)
 {
-    //calls the other constructor: Asteroid(int size)
+    int newSize = astExploded.getSize() + 1;
+    *this = Asteroid(newSize);
     setCenter(astExploded.getCenter());
-    int newSmallerSize = astExploded.getSize() + 1;
-    //random delta-x : inertia + the smaller the asteroid, the faster its possible speed
-    setDeltaX(astExploded.getDeltaX() / 1.5 + somePosNegValue( 5 + newSmallerSize * 2));
-    //random delta-y : inertia + the smaller the asteroid, the faster its possible speed
-    setDeltaY(astExploded.getDeltaY() / 1.5 + somePosNegValue( 5 + newSmallerSize * 2));
 
+    // Adjust speed based on the size of the new smaller asteroid
+    setDeltaX(astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSize * 2));
+    setDeltaY(astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSize * 2));
 }
 
-//converts the radius to integer representing the size of the Asteroid:
-    //0 = large, 1 = medium, 2 = small
+std::vector<sf::Vector2f> Asteroid::generateVertices()
+{
+    const int MAX_RADIANS_X1000 = 6283;
+    const double PRECISION = 100.0;
 
-int Asteroid::getSize(){
-
-    if (getRadius() == LARGE_RADIUS) {
-            return 0;
-    }
-    else if (getRadius() == LARGE_RADIUS / 2) {
-            return 1;
-    }
-    else if (getRadius() == LARGE_RADIUS / 4) {
-        return 2;
-    }
-    return 0;
-}
-
-
-
-QVector<QPoint> Asteroid::generateVertices(){
-
-    //6.283 is the max radians
-    auto const MAX_RADIANS_X1000 =6283;
-
-    constexpr double PRECISION = 100.0;
-
-    auto polarPointSupplier = []() {
-        double r = (800 + QRandomGenerator::global()->bounded(200)) / 1000.0; //number between 0.8 and 0.999
-        double theta = QRandomGenerator::global()->bounded(MAX_RADIANS_X1000) / 1000.0; // number between 0 and 6.282
+    // Lambda to generate random polar points
+    auto polarPointSupplier = []() -> PolarPoint {
+        double r = (800 + Game::R.nextInt(200)) / 1000.0;
+        double theta = Game::R.nextInt(MAX_RADIANS_X1000) / 1000.0;
         return PolarPoint(r, theta);
     };
 
-    auto polarToCartesian = [](auto & pp) {
-            int x = static_cast<int>(pp.getR() * PRECISION * sin(pp.getTheta()));
-            int y = static_cast<int>(pp.getR() * PRECISION * cos(pp.getTheta()));
-            return QPoint(x, y);
+    // Lambda to convert polar to cartesian
+    auto polarToCartesian = [](const PolarPoint& pp) -> sf::Vector2f {
+        return sf::Vector2f(
+            static_cast<float>(pp.getR() * 100.0 * std::sin(pp.getTheta())),
+            static_cast<float>(pp.getR() * 100.0 * std::cos(pp.getTheta()))
+            );
     };
 
-   //random number of vertices
-   auto const VERTICES = QRandomGenerator::global()->bounded(7) + 25;
-   std::vector<PolarPoint> polarPoints(VERTICES);
+    // Generate a random number of vertices
+    int VERTICES = Game::R.nextInt(7) + 25;
 
-   std::generate(begin(polarPoints), end(polarPoints), polarPointSupplier);
+    // Generate, sort, and convert polar points to cartesian coordinates
+    std::vector<PolarPoint> polarPoints;
+    for (int i = 0; i < VERTICES; ++i) {
+        polarPoints.push_back(polarPointSupplier());
+    }
 
-   //sort by ascending theta value
-   std::sort(begin(polarPoints), end(polarPoints),
-            [](PolarPoint & p1, PolarPoint & p2){
-                return p1.getTheta() < p2.getTheta();
+    std::sort(polarPoints.begin(), polarPoints.end(), [](const PolarPoint& pp1, const PolarPoint& pp2) {
+        return pp1.getTheta() < pp2.getTheta();
     });
 
-    //conversion from polar to Cartesian points.
-    QVector<QPoint> cartesianPoints(VERTICES);
-    std::transform(begin(polarPoints), end(polarPoints),
-                    cartesianPoints.begin(), polarToCartesian);
+    // Convert to cartesian and return
+    std::vector<sf::Vector2f> cartesianPoints;
+    std::transform(polarPoints.begin(), polarPoints.end(), std::back_inserter(cartesianPoints), polarToCartesian);
 
-    //todo: this method should use streams similar to the reference Java app
     return cartesianPoints;
 }
-
-void Asteroid::draw(QPainter &painter) {
-    renderVector(painter);
-}
-**/

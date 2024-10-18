@@ -3,102 +3,73 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include "Movable.h"
-#include "Game.h"
-
-class Game;
-
+#include <functional>
+#include "CommandCenter.h"
+#include "Utils.h"
+#include "PolarPoint.h"
 
 class GamePanel {
 public:
-    GamePanel(const sf::Vector2u& size);
-    ~GamePanel();
+    GamePanel(sf::RenderWindow& win) : window(win) {
+        initFontInfo();
+        initShipPoints();
+        initOffscreenBuffer();
+    }
 
-    void setGameParent(Game* pGame);
-
-    void handleInput(const sf::Event& event);
     void update();
-    void render(sf::RenderWindow& window);
 
 private:
-    void drawFalconStatus(sf::RenderWindow& window);
-    void drawNumFrame(sf::RenderWindow& window);
-    void drawMeters(sf::RenderWindow& window);
-    void drawOneMeter(sf::RenderWindow& window, sf::Color color, int offSet, int percent);
-    void moveDrawMovables(sf::RenderWindow& window, std::vector<Movable*>& teams);
-    void drawNumberShipsRemaining(sf::RenderWindow& window);
-    void drawOneShip(sf::RenderWindow& window, int offSet);
-    void displayTextOnScreen(sf::RenderWindow& window, const std::vector<std::string>& text);
-
+    sf::RenderWindow& window;
     sf::Font fontNormal;
     sf::Font fontBig;
     sf::Text text;
-
     std::vector<sf::Vector2f> pntShipsRemaining;
-    Game* m_parentGame;
+    sf::Image imgOff;
+    sf::RenderTexture offscreenBuffer;
+
+    void initFontInfo() {
+        if (!fontNormal.loadFromFile("SansSerif-Bold.ttf")) {
+            // Handle error
+        }
+        if (!fontBig.loadFromFile("SansSerif-BoldItalic.ttf")) {
+            // Handle error
+        }
+        text.setFont(fontNormal);
+        text.setCharacterSize(12);
+    }
+
+    void initShipPoints() {
+        pntShipsRemaining = {
+            {0, 9}, {-1, 6}, {-1, 3}, {-4, 1}, {4, 1}, {-4, 1}, {-4, -2}, {-1, -2}, {-1, -9},
+            {-1, -2}, {-4, -2}, {-10, -8}, {-5, -9}, {-7, -11}, {-4, -11}, {-2, -9}, {-2, -10},
+            {-1, -10}, {-1, -9}, {1, -9}, {1, -10}, {2, -10}, {2, -9}, {4, -11}, {7, -11},
+            {5, -9}, {10, -8}, {4, -2}, {1, -2}, {1, -9}, {1, -2}, {4, -2}, {4, 1}, {1, 3},
+            {1, 6}, {0, 9}
+        };
+    }
+
+    void initOffscreenBuffer();
+
+    void drawNumFrame();
+
+    void drawFalconStatus();
+
+    void drawMeters();
+    void drawOneMeter(sf::Color color, int offset, int percent);
+
+    void drawNumberShipsRemaining();
+    void drawOneShip(int offset);
+
+    void displayTextOnScreen(const std::vector<std::string>& lines);
+
+    void moveDrawMovables(const std::vector<std::vector<Movable*>>& teams) {
+        for (const auto& team : teams) {
+            for (Movable* movable : team) {
+                movable->move();
+                movable->draw(window);
+            }
+        }
+    }
 };
-
-/**
-#include <QWidget>
-#include <QFont>
-#include <QFontMetrics>
-#include <QPoint>
-#include <QFontMetrics>
-
-#include "Movable.h"
-
-class Game;
-
-class GamePanel : public QWidget
-{
-    Q_OBJECT
-
-public:
-    GamePanel(QWidget *parent = nullptr, const QSize &size = QSize());
-    ~GamePanel();
-
-    void    setGameParent(Game* pGame);
-
-protected:
-    void paintEvent(QPaintEvent *event) override;
-
-    void drawFalconStatus(QPainter &painter);
-    void drawNumFrame(QPainter* painter);
-    void drawMeters(QPainter* painter);
-
-    void drawOneMeter(QPainter* painter, QColor color, int offSet, int percent);
-    void moveDrawMovables(QPainter* painter, QVector<Movable*> &teams);
-
-//    QVector<QPointF> cartesianToPolar(QVector<QPointF>  polygon);
-//    QVector<QPointF> rotatePolarBy90(QVector<QPointF> points);
-//
-//    QVector<QPointF> polarToCartesian(QVector<QPointF> polarPoints);
-
-    void drawNumberShipsRemaining(QPainter* painter);
-    void drawOneShip(QPainter* painter, int offSet);
-
-    void displayTextOnScreen(QPainter* painter, QStringList text);
-
-protected:
-    // ===============================================
-    // ==METHODS
-    // ===============================================
-    // Overridden methods from QMainWindow and KeyListener.
-   // void keyPressEvent(QKeyEvent *event) override;
-   // void keyReleaseEvent(QKeyEvent *event) override;
-    void keyPressEvent(QKeyEvent *event) override;
-    void keyReleaseEvent(QKeyEvent *event) override;
-
-private:
-    QFont fontNormal;
-    QFont fontBig;
-    QFontMetrics* fontMetrics;
-    int fontWidth;
-    int fontHeight;
-    QVector<QPoint> pntShipsRemaining;
-
-    Game* m_parentGame;
-};
-**/
 
 #endif // GAMEPANEL_H

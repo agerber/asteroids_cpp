@@ -1,52 +1,126 @@
 #ifndef FALCON_H
 #define FALCON_H
 
-
-
 #include "Sprite.h"
 #include <SFML/Graphics.hpp>
 #include <map>
+#include <memory>
+#include <cmath>
 
 class Falcon : public Sprite {
 public:
-    enum ImageState {
-        FALCON_INVISIBLE,
-        FALCON,
-        FALCON_THR,
-        FALCON_PRO,
-        FALCON_PRO_THR,
+    // Constants
+    static const int TURN_STEP = 11;
+    static const int INITIAL_SPAWN_TIME = 46;
+    static const int MAX_SHIELD = 200;
+    static const int MAX_NUKE = 600;
+    static const int MIN_RADIUS = 28;
+
+    enum class ImageState {
+        FALCON_INVISIBLE, // For pre-spawning
+        FALCON,           // Normal ship
+        FALCON_THR,       // Normal ship thrusting
+        FALCON_PRO,       // Protected ship (green)
+        FALCON_PRO_THR    // Protected ship (green) thrusting
     };
 
-    enum TurnState { IDLE, LEFT, RIGHT };
+    enum class TurnState { IDLE, LEFT, RIGHT };
 
-public:
-    Falcon();
 
-    void move() override;
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-    bool isProtected() const override;
-    void drawShield(sf::RenderTarget& target) const;
+    void setThrusting(bool value) { thrusting = value; }
+    void setTurnState(TurnState state) { turnState = state; }
+    void setShield(int value) { shield = value; }
+    void setShowLevel(int value) { showLevel = value; }
+    void setNukeMeter(int value) { nukeMeter = value; }
 
-    void setShield(int shield_in);
-    int getShield();
 
-    void setNukeMeter(int nukeMeter_in);
-    int getNukeMeter();
+    // Constructor
+    Falcon() {
+        setTeam(Team::FRIEND);
+        setRadius(MIN_RADIUS);
+        shield = 0;
+        nukeMeter = 0;
+        invisible = 0;
+        maxSpeedAttained = false;
+        showLevel = 0;
+        thrusting = false;
+        turnState = TurnState::IDLE;
 
-    void setInvisible(int invisible_in);
-    int getInvisible();
+        // Load images
+        std::map<ImageState, std::shared_ptr<sf::Texture>> rasterMap;
+        rasterMap[ImageState::FALCON_INVISIBLE] = nullptr;
+        rasterMap[ImageState::FALCON] = loadGraphic("imgs/fal/falcon125.png");
+        rasterMap[ImageState::FALCON_THR] = loadGraphic("imgs/fal/falcon125_thr.png");
+        rasterMap[ImageState::FALCON_PRO] = loadGraphic("imgs/fal/falcon125_PRO.png");
+        rasterMap[ImageState::FALCON_PRO_THR] = loadGraphic("imgs/fal/falcon125_PRO_thr.png");
 
-    void setMaxSpeedAttained(int maxSpeedAttained_in);
-    bool getMaxSpeedAttained();
+        setRasterMap( rasterMap );
+    }
 
-    void setShowLevel(int showLevel_in);
-    int getShowLevel();
+    // Check if the Falcon is protected
+    bool isProtected() const override {
+        return shield > 0;
+    }
 
-    void setThrusting(bool thrusting_in);
-    bool getThrusting();
+    // Move the Falcon
+    void move() override {
+        Sprite::move();
 
-    void setTurnState(TurnState w_state);
-    TurnState getTurnState();
+        if (invisible > 0) invisible--;
+        if (shield > 0) shield--;
+        if (nukeMeter > 0) nukeMeter--;
+        if (showLevel > 0) showLevel--;
+
+        const double THRUST = 0.85;
+        const int MAX_VELOCITY = 39;
+
+        if (thrusting) {
+            double vectorX = std::cos(getOrientation() * M_PI / 180.0) * THRUST;
+            double vectorY = std::sin(getOrientation() * M_PI / 180.0) * THRUST;
+
+            int absVelocity = static_cast<int>(std::sqrt(
+                std::pow(getDeltaX() + vectorX, 2) + std::pow(getDeltaY() + vectorY, 2)));
+
+            if (absVelocity < MAX_VELOCITY) {
+                setDeltaX(getDeltaX() + vectorX);
+                setDeltaY(getDeltaY() + vectorY);
+                setRadius(MIN_RADIUS + absVelocity / 3);
+                maxSpeedAttained = false;
+            } else {
+                maxSpeedAttained = true;
+            }
+        }
+
+        int adjustOr = getOrientation();
+        switch (turnState) {
+        case TurnState::LEFT:
+            adjustOr = (getOrientation() <= 0) ? 360 - TURN_STEP : getOrientation() - TURN_STEP;
+            break;
+        case TurnState::RIGHT:
+            adjustOr = (getOrientation() >= 360) ? TURN_STEP : getOrientation() + TURN_STEP;
+            break;
+        case TurnState::IDLE:
+        default:
+            break;
+        }
+        setOrientation(adjustOr);
+    }
+
+    // Draw the Falcon
+    void draw(sf::RenderWindow& window) override {
+        ImageState imageState;
+        if (invisible > 0) {
+            imageState = ImageState::FALCON_INVISIBLE;
+        } else if (isProtected()) {
+            imageState = thrusting ? ImageState::FALCON_PRO_THR : ImageState::FALCON_PRO;
+            drawShield(window);
+        } else {
+            imageState = thrusting ? ImageState::FALCON_THR : ImageState::FALCON;
+        }
+
+        // Render based on image state
+        renderRaster( window, getRasterMap().at(imageState) );
+    }
 
 private:
     int shield;
@@ -55,106 +129,17 @@ private:
     bool maxSpeedAttained;
     int showLevel;
     bool thrusting;
-    TurnState turnState = IDLE;
-    std::map<ImageState, sf::Texture> rasterMap;
+    TurnState turnState;
 
-public:
-
-    const static int TURN_STEP = 11;
-    static const int INITIAL_SPAWN_TIME = 46;
-    static const int MAX_SHIELD = 200;
-    static const int MAX_NUKE = 600;
-    static const int MIN_RADIUS = 14;
+    // Draw the shield around the Falcon
+    void drawShield(sf::RenderWindow& window) {
+        sf::CircleShape shieldShape(getRadius());
+        shieldShape.setOutlineColor(sf::Color::Cyan);
+        shieldShape.setOutlineThickness(1);
+        shieldShape.setFillColor(sf::Color::Transparent);
+        shieldShape.setPosition(getCenter().x - getRadius(), getCenter().y - getRadius());
+        window.draw(shieldShape);
+    }
 };
 
-
-/**
-#include "Sprite.h"
-#include <QMap>
-#include <QImage>
-
-class Falcon : public Sprite
-{
-public:
-    //images states
-    enum ImageState {
-        FALCON_INVISIBLE, //for pre-spawning
-        FALCON, //normal ship
-        FALCON_THR, //normal ship thrusting
-        FALCON_PRO, //protected ship (green)
-        FALCON_PRO_THR, //protected ship (green) thrusting
-    };
-
-    enum TurnState {IDLE, LEFT, RIGHT};
-
-public:
-    // ==============================================================
-    // CONSTRUCTOR
-    // ==============================================================
-    Falcon();
-
-    // ==============================================================
-    // METHODS
-    // ==============================================================
-    void move() override;
-    void draw(QPainter &painter) override;
-    bool isProtected() override;
-    void drawShield(QPainter &);
-
-    void setShield(int shield_in) { shield = shield_in; };
-    int  getShield() { return shield; }
-
-    void setNukeMeter(int nukeMeter_in) { nukeMeter = nukeMeter_in; };
-    int getNukeMeter() { return nukeMeter; }
-
-    void setInvisible(int invisible_in) { invisible = invisible_in; };
-    int getInvisible() { return invisible; }
-    
-    void setMaxSpeedAttained(int maxSpeedAttained_in) { maxSpeedAttained = maxSpeedAttained_in; };
-    bool getMaxSpeedAttained() { return maxSpeedAttained; }
-
-    void setShowLevel(int showLevel_in) { showLevel = showLevel_in; };
-    int getShowLevel() { return showLevel; }
-
-    void setThrusting(bool thrusting_in) { thrusting = thrusting_in; };
-    bool getThrusting() { return thrusting; }
-
-    void setTurnState(TurnState w_state) { turnState = w_state; };
-    TurnState getTurnState() { return turnState; };
-    void renderRaster(QPainter &painter, QImage image);
-
-public:
-    // ==============================================================
-    // FIELDS
-    // ==============================================================
-
-    //static fields
-
-    //number of degrees the falcon will turn at each animation cycle if the turnState is LEFT or RIGHT
-    const static int TURN_STEP = 11;
-    //number of frames that the falcon will be protected after a spawn
-    static const int INITIAL_SPAWN_TIME = 46;
-    //number of frames falcon will be protected after consuming a NewShieldFloater
-    static const int MAX_SHIELD = 200;
-    static const int MAX_NUKE = 600;
-
-    static const int MIN_RADIUS = 14;
-
-
-private:
-    //instance fields
-    int shield;
-    int nukeMeter;
-    int invisible;
-    bool maxSpeedAttained;
-    int showLevel;
-    bool thrusting;
-    //enum used for turnState field
-    TurnState turnState = IDLE;
-
-    QMap<ImageState, QImage> rasterMap;
-
-};
-**/
-
-#endif // FALCON_H
+#endif

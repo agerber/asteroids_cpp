@@ -1,44 +1,42 @@
-#pragma once
+#ifndef GAMEOPSQUEUE_H
+#define GAMEOPSQUEUE_H
 
-#include <vector>
+#include <queue>
 #include <mutex>
+#include <memory>
 #include "GameOp.h"
-#include "Movable.h"
 
+// Effectively a Queue that enqueues and dequeues Game Operations (add/remove)
 class GameOpsQueue {
 public:
-    GameOpsQueue();
+    GameOpsQueue() = default;
 
-    void enqueue(Movable* mov, GameOp::Action action);
-    void enqueue(const GameOp& op);
-    GameOp* dequeue();
-    bool isExist(Movable* mov);
+    // Method to enqueue a GameOp with a movable object and an action
+    void enqueue(std::shared_ptr<Movable> mov, GameOp::Action action) {
+        std::lock_guard<std::mutex> lock(mutex);
+        queue.push(GameOp(mov, action));
+    }
 
-    bool empty() const;
+    // Method to dequeue a GameOp
+    GameOp dequeue() {
+        std::lock_guard<std::mutex> lock(mutex);
+        if (queue.empty()) {
+            throw std::runtime_error("Attempted to dequeue from an empty queue.");
+        }
+        GameOp gameOp = queue.front();
+        queue.pop();
+        return gameOp;
+    }
+
+    // Check if the queue is empty
+    bool isEmpty() const {
+        std::lock_guard<std::mutex> lock(mutex);
+        return queue.empty();
+    }
 
 private:
-    std::vector<GameOp*> queue;
-    mutable std::mutex lock;  // Use std::mutex for thread safety
+    std::queue<GameOp> queue;  // Queue to hold GameOp objects
+    mutable std::mutex mutex;  // Mutex for thread safety
 };
 
-
-/**
-#pragma once
-
-#include <QVector>
-#include <QObject>
-#include <QMutex>
-#include "GameOp.h"
-#include "Movable.h"
-
-class GameOpsQueue : public QVector<GameOp*> {
-public:
-    GameOpsQueue();
-    void enqueue(Movable* mov, GameOp::Action action);
-    void enqueue(GameOp op);
-    GameOp* dequeue();
-    bool isExist(Movable* mov);
-private:
-    QMutex* lock;
-};
-**/
+#endif // GAMEOPSQUEUE_H

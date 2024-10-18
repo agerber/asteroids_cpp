@@ -1,39 +1,60 @@
 #ifndef GAMEFRAME_H
 #define GAMEFRAME_H
 
-
 #include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/System.hpp>
 
-class GameFrame : public sf::RenderWindow {
+class GameFrame {
 public:
-    GameFrame();
-    ~GameFrame();
+    // Constructor
+    GameFrame() {
+        // Initialize the window with a default size and title
+        window.create(sf::VideoMode(800, 600), "Game Frame");
+        window.setFramerateLimit(60); // Limit the frame rate to 60 FPS
+        run();
+    }
+
+    // Destructor
+    ~GameFrame() {
+        if (window.isOpen()) {
+            window.close();
+        }
+    }
+
+    // Main game loop
+    void run() {
+        while (window.isOpen()) {
+            processEvents();
+            update();
+            render();
+        }
+    }
 
 private:
-    void initialize();
-    void handleCloseEvent();
+    sf::RenderWindow window;
+
+    // Process events (handling window close events)
+    void processEvents() {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+        }
+    }
+
+    // Update game state (empty for now, placeholder for future logic)
+    void update() {
+        // Add game update logic here if needed
+    }
+
+    // Render content
+    void render() {
+        window.clear();
+        // Add game rendering logic here if needed
+        window.display();
+    }
 };
 
-/**
-#include <QWidget>
-#include <QLayout>
-
-class GameFrame : public QWidget {
-    Q_OBJECT
-
-public:
-    GameFrame(QWidget *parent = nullptr);
-
-private:
-    void initialize();
-
-protected:
-    void closeEvent(QCloseEvent *event) override;
-
-private:
-    QVBoxLayout *layout;
-};
-**/
-
-
-#endif // GAMEFRAME_H
+#endif

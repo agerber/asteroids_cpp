@@ -1,48 +1,31 @@
 #ifndef GAMEOP_H
 #define GAMEOP_H
 
-
 #include "Movable.h"
+#include <memory>
 
 class GameOp {
 public:
+    // Define the Action enumeration
     enum class Action {
         ADD, REMOVE
     };
 
-    // Constructor
-    GameOp(Movable* movable, Action action);
-
-    // Getters
-    Movable* getMovable() const;
-    Action getAction() const;
-
 private:
-    Movable* m_movable;
-    Action m_action;
-};
+    std::shared_ptr<Movable> movable;  // Pointer to a Movable object
+    Action action;                     // Action to be performed (ADD or REMOVE)
 
-/**
-#include "Movable.h"
-
-class GameOp
-{
 public:
-    enum Action {
-        ADD, REMOVE
-    };
-
     // Constructor
-    GameOp(Movable *movable, Action action);
+    GameOp(std::shared_ptr<Movable> movableObj, Action act)
+        : movable(movableObj), action(act) {}
 
-    // Getters
-    Movable* getMovable();
-    Action getAction();
+    // Getters and Setters
+    std::shared_ptr<Movable> getMovable() const { return movable; }
+    void setMovable(std::shared_ptr<Movable> movableObj) { movable = movableObj; }
 
-private:
-    Movable *m_movable;
-    Action m_action;
+    Action getAction() const { return action; }
+    void setAction(Action act) { action = act; }
 };
-**/
 
-#endif // GAMEOP_H
+#endif

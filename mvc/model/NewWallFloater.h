@@ -1,39 +1,22 @@
 #ifndef NEWWALLFLOATER_H
 #define NEWWALLFLOATER_H
 
-
-
 #include "Floater.h"
+#include "Game.h"
 #include <SFML/Graphics.hpp>
 
 class NewWallFloater : public Floater {
 public:
-    NewWallFloater();
-    ~NewWallFloater() = default;
+    // Constants
+    static int SPAWN_NEW_WALL_FLOATER();
 
-    static int SPAWN_NEW_WALL_FLOATER;
-
-private:
-    sf::Color MAROON = sf::Color(186, 0, 22);
+    // Constructor
+    NewWallFloater() {
+        // Set color to maroon
+        setColor(sf::Color(186, 0, 22));
+        // Set expiry time
+        setExpiry(230);
+    }
 };
 
-/**
-#include "Floater.h"
-#include "Game.h"
-#include <QColor>
-
-class NewWallFloater : public Floater
-{
-public:
-    //spawn every 40 seconds
-    NewWallFloater();
-    ~NewWallFloater() {}
-    static  int SPAWN_NEW_WALL_FLOATER; 
-
-private:
-    QColor MAROON{ 186, 0, 22 };
-};
-**/
-
-
-#endif // NEWWALLFLOATER_H
+#endif
