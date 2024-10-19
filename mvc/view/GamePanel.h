@@ -4,9 +4,10 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <functional>
-#include "CommandCenter.h"
 #include "Utils.h"
 #include "PolarPoint.h"
+#include "Movable.h"
+#include <list>
 
 class GamePanel {
 public:
@@ -62,11 +63,13 @@ private:
 
     void displayTextOnScreen(const std::vector<std::string>& lines);
 
-    void moveDrawMovables(const std::vector<std::vector<Movable*>>& teams) {
+    void moveDrawMovables(const std::vector<std::list<std::shared_ptr<Movable>>>& teams) {
         for (const auto& team : teams) {
-            for (Movable* movable : team) {
-                movable->move();
-                movable->draw(window);
+            for (const auto& movable : team) {
+                if (movable) {
+                    movable->move();
+                    movable->draw(window);
+                }
             }
         }
     }

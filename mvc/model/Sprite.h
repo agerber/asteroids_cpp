@@ -13,7 +13,6 @@
 #include "Movable.h"
 #include "PolarPoint.h"
 #include "Utils.h"
-#include "CommandCenter.h"
 #include "GameOp.h"
 
 
@@ -72,7 +71,7 @@ public:
 
 
 protected:
-    virtual void draw(sf::RenderWindow& window) = 0;
+    virtual void draw(sf::RenderWindow& window) override = 0;
 
     virtual void move() override;
 

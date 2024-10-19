@@ -1,16 +1,44 @@
-
 #ifndef STAR_H
 #define STAR_H
 
+#include "Movable.h"
 #include <SFML/Graphics.hpp>
 
-class Star {
-private:
-    sf::CircleShape starShape;
-
+class Star : public Movable {
 public:
-    Star(float x, float y);
-    void draw(sf::RenderWindow &window);
+    Star();
+
+    // Implement the required methods from the Movable interface
+    void draw(sf::RenderWindow& window) override {
+        sf::CircleShape star(1.0f); // Tiny circle to represent the star
+        star.setPosition(center);
+        star.setFillColor(color);
+        window.draw(star);
+    }
+
+    sf::Vector2f getCenter() const override {
+        return center;
+    }
+
+    int getRadius() const override {
+        return 1;
+    }
+
+    Team getTeam() const override {
+        return Team::DEBRIS;
+    }
+
+    bool isProtected() const override {
+        return false;
+    }
+
+    void move() override {
+        // Stars don't move, so do nothing here
+    }
+
+private:
+    sf::Vector2f center;
+    sf::Color color;
 };
 
-#endif
+#endif // STAR_H

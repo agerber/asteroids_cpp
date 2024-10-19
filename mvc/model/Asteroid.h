@@ -14,15 +14,19 @@
 class Asteroid : public Sprite {
 private:
     const int LARGE_RADIUS = 110;
-
-public:
-    // Constructor for creating asteroids of different sizes
-    Asteroid(int size) {
+    void setSize(int size)
+    {
         // Size determines if the asteroid is large, medium, or small
         if (size == 0)
             setRadius(LARGE_RADIUS); // Large asteroid
         else
             setRadius(LARGE_RADIUS / (size * 2)); // Medium or small asteroid
+    }
+
+public:
+    // Constructor for creating asteroids of different sizes
+    Asteroid(int size) {
+        setSize(size);
 
         // Set as FOE
         setTeam(Team::FOE);

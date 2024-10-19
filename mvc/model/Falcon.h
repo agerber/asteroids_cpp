@@ -32,7 +32,15 @@ public:
     void setShield(int value) { shield = value; }
     void setShowLevel(int value) { showLevel = value; }
     void setNukeMeter(int value) { nukeMeter = value; }
+    void setMaxSpeedAttained(bool value) { maxSpeedAttained = value; }
+    void setInvisible(int value) { invisible = value; }
 
+    int getShowLevel() const { return showLevel; }
+    int getThrusting() const { return thrusting; }
+    TurnState getTurnState() const { return turnState; }
+    int getShield() const { return shield; }
+    int getNukeMeter() const { return nukeMeter; }
+    bool isMaxSpeedAttained() const { return maxSpeedAttained; }
 
     // Constructor
     Falcon() {
@@ -54,7 +62,8 @@ public:
         rasterMap[ImageState::FALCON_PRO] = loadGraphic("imgs/fal/falcon125_PRO.png");
         rasterMap[ImageState::FALCON_PRO_THR] = loadGraphic("imgs/fal/falcon125_PRO_thr.png");
 
-        setRasterMap( rasterMap );
+        //setRasterMap( rasterMap );
+
     }
 
     // Check if the Falcon is protected
@@ -119,7 +128,7 @@ public:
         }
 
         // Render based on image state
-        renderRaster( window, getRasterMap().at(imageState) );
+        renderRaster( window, getRasterMap()[static_cast<int>(imageState)] );
     }
 
 private:

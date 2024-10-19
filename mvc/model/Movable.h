@@ -2,9 +2,9 @@
 #define MOVABLE_H
 
 #include <SFML/Graphics.hpp>
+#include <memory>
 
-
-class Movable {
+class Movable: public std::enable_shared_from_this<Movable> {
 public:
     enum class Team { FRIEND, FOE, FLOATER, DEBRIS };
 
@@ -19,6 +19,8 @@ public:
     virtual int getRadius() const = 0;
     virtual Team getTeam() const = 0;
     virtual bool isProtected() const = 0;
+
+    int id;
 };
 
 

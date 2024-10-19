@@ -3,21 +3,21 @@
 
 Sprite::Sprite()
 {
-    center = sf::Vector2f(Game::R.nextInt(Game::DIM.width),
-                          Game::R.nextInt(Game::DIM.height));
+    center = sf::Vector2f(Game::nextInt(Game::DIM.x),
+                          Game::nextInt(Game::DIM.y));
 }
 
 void Sprite::move()
 {
     // Right-bounds reached
-    if (center.x > Game::DIM.width) {
+    if (center.x > Game::DIM.x) {
         center.x = 1;
     } else if (center.x < 0) { // Left-bounds reached
-        center.x = Game::DIM.width - 1;
-    } else if (center.y > Game::DIM.height) { // Bottom-bounds reached
+        center.x = Game::DIM.x - 1;
+    } else if (center.y > Game::DIM.y) { // Bottom-bounds reached
         center.y = 1;
     } else if (center.y < 0) { // Top-bounds reached
-        center.y = Game::DIM.height - 1;
+        center.y = Game::DIM.y - 1;
     } else {
         center.x += deltaX;
         center.y += deltaY;
@@ -32,14 +32,14 @@ void Sprite::move()
 
 int Sprite::somePosNegValue(int seed)
 {
-    int randomNumber = Game::R.nextInt(seed);
+    int randomNumber = Game::nextInt(seed);
     return (randomNumber % 2 == 0) ? randomNumber : -randomNumber;
 }
 
 void Sprite::expire()
 {
     if (expiry == 1) {
-        CommandCenter::getInstance().getOpsQueue().enqueue(shared_from_this(), GameOp::Action::REMOVE);
+        CommandCenter::getInstance()->getOpsQueue().enqueue(shared_from_this(), GameOp::Action::REMOVE);
     }
     expiry--;
 }

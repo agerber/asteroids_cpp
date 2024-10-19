@@ -16,7 +16,7 @@ file(GLOB MVC_SRCS mvc/view/*.cpp
         mvc/model/*.cpp)
 
 # Create the executable
-add_executable(asteroid asteroid/main.cpp ${MVC_SRCS}
+add_executable(asteroid main.cpp ${MVC_SRCS}
     mvc/model/ShieldFloater.h mvc/model/ShieldFloater.cpp
     mvc/model/whiteclouddebris.h mvc/model/Asteroid.h
     mvc/model/Brick.h mvc/model/Bullet.h mvc/model/Falcon.h
@@ -25,7 +25,6 @@ add_executable(asteroid asteroid/main.cpp ${MVC_SRCS}
     mvc/model/Sprite.h mvc/model/Star.h
     mvc/controller/CommandCenter.h mvc/controller/Game.h
     mvc/controller/GameOp.h mvc/controller/GameOpsQueue.h
-    mvc/controller/SoundRunnable.h
     mvc/controller/utils.h mvc/view/GameFrame.h mvc/view/GamePanel.h)
 
 # Link SFML libraries to the executable
@@ -37,5 +36,4 @@ target_include_directories(asteroid PRIVATE
     mvc/model
     mvc/view
     asteroid
-    3rdparty/Streams/source
     ${SFML_INCLUDE_DIRS})

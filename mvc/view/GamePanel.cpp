@@ -8,7 +8,7 @@ void GamePanel::update()
     window.clear(sf::Color::Black);
     drawNumFrame();
 
-    if (CommandCenter::getInstance().isGameOver()) {
+    if (CommandCenter::getInstance()->isGameOver()) {
         displayTextOnScreen({
             "GAME OVER",
             "use the arrow keys to turn and thrust",
@@ -18,14 +18,14 @@ void GamePanel::update()
             "'Q' to Quit",
             "'M' to toggle music"
         });
-    } else if (CommandCenter::getInstance().isPaused()) {
+    } else if (CommandCenter::getInstance()->isPaused()) {
         displayTextOnScreen({"Game Paused"});
     } else {
         moveDrawMovables({
-            CommandCenter::getInstance().getMovDebris(),
-            CommandCenter::getInstance().getMovFloaters(),
-            CommandCenter::getInstance().getMovFoes(),
-            CommandCenter::getInstance().getMovFriends()
+            CommandCenter::getInstance()->getMovDebris(),
+            CommandCenter::getInstance()->getMovFloaters(),
+            CommandCenter::getInstance()->getMovFoes(),
+            CommandCenter::getInstance()->getMovFriends()
         });
 
         drawNumberShipsRemaining();
@@ -39,13 +39,13 @@ void GamePanel::update()
 
 void GamePanel::initOffscreenBuffer()
 {
-    offscreenBuffer.create(Game::DIM.width, Game::DIM.height);
+    offscreenBuffer.create(Game::DIM.x, Game::DIM.y);
 }
 
 void GamePanel::drawNumFrame()
 {
-    text.setString("FRAME: " + std::to_string(CommandCenter::getInstance().getFrame()));
-    text.setPosition(10, Game::DIM.height - 30);
+    text.setString("FRAME: " + std::to_string(CommandCenter::getInstance()->getFrame()));
+    text.setPosition(10, Game::DIM.y - 30);
     text.setFillColor(sf::Color::White);
     window.draw(text);
 }
@@ -56,23 +56,23 @@ void GamePanel::drawFalconStatus()
     text.setFillColor(sf::Color::White);
 
     // Score
-    text.setString("Score: " + std::to_string(CommandCenter::getInstance().getScore()));
+    text.setString("Score: " + std::to_string(CommandCenter::getInstance()->getScore()));
     text.setPosition(10, 10);
     window.draw(text);
 
     // Level
-    std::string levelText = "Level: " + std::to_string(CommandCenter::getInstance().getLevel());
+    std::string levelText = "Level: " + std::to_string(CommandCenter::getInstance()->getLevel());
     text.setString(levelText);
     text.setPosition(20, 30);
     window.draw(text);
 
     // Status
     std::vector<std::string> statusArray;
-    if (CommandCenter::getInstance().getFalcon().getShowLevel() > 0)
+    if (CommandCenter::getInstance()->getFalcon()->getShowLevel() > 0)
         statusArray.push_back(levelText);
-    if (CommandCenter::getInstance().getFalcon().isMaxSpeedAttained())
+    if (CommandCenter::getInstance()->getFalcon()->isMaxSpeedAttained())
         statusArray.push_back("WARNING - SLOW DOWN");
-    if (CommandCenter::getInstance().getFalcon().getNukeMeter() > 0)
+    if (CommandCenter::getInstance()->getFalcon()->getNukeMeter() > 0)
         statusArray.push_back("PRESS N for NUKE");
 
     displayTextOnScreen(statusArray);
@@ -80,8 +80,8 @@ void GamePanel::drawFalconStatus()
 
 void GamePanel::drawMeters()
 {
-    int shieldValue = CommandCenter::getInstance().getFalcon().getShield() / 2;
-    int nukeValue = CommandCenter::getInstance().getFalcon().getNukeMeter() / 6;
+    int shieldValue = CommandCenter::getInstance()->getFalcon()->getShield() / 2;
+    int nukeValue = CommandCenter::getInstance()->getFalcon()->getNukeMeter() / 6;
 
     drawOneMeter(sf::Color::Cyan, 1, shieldValue);
     drawOneMeter(sf::Color::Yellow, 2, nukeValue);
@@ -89,8 +89,8 @@ void GamePanel::drawMeters()
 
 void GamePanel::drawOneMeter(sf::Color color, int offset, int percent)
 {
-    int xVal = Game::DIM.width - (100 + 120 * offset);
-    int yVal = Game::DIM.height - 45;
+    int xVal = Game::DIM.x - (100 + 120 * offset);
+    int yVal = Game::DIM.y - 45;
 
     sf::RectangleShape meter(sf::Vector2f(percent, 10));
     meter.setPosition(xVal, yVal);
@@ -106,7 +106,7 @@ void GamePanel::drawOneMeter(sf::Color color, int offset, int percent)
 
 void GamePanel::drawNumberShipsRemaining()
 {
-    int numFalcons = CommandCenter::getInstance().getNumFalcons();
+    int numFalcons = CommandCenter::getInstance()->getNumFalcons();
     while (numFalcons > 0) {
         drawOneShip(numFalcons--);
     }
@@ -120,8 +120,8 @@ void GamePanel::drawOneShip(int offset)
         ship.setPoint(i, pntShipsRemaining[i]);
     }
 
-    ship.setFillColor(sf::Color::Orange);
-    ship.setPosition(Game::DIM.width - (27 * offset), Game::DIM.height - 45);
+    ship.setFillColor(sf::Color(255, 165, 0));
+    ship.setPosition(Game::DIM.x - (27 * offset), Game::DIM.y - 45);
     window.draw(ship);
 }
 
@@ -130,7 +130,7 @@ void GamePanel::displayTextOnScreen(const std::vector<std::string> &lines)
     int yOffset = 0;
     for (const auto& line : lines) {
         text.setString(line);
-        text.setPosition((Game::DIM.width - text.getGlobalBounds().width) / 2, Game::DIM.height / 4 + yOffset);
+        text.setPosition((Game::DIM.x - text.getGlobalBounds().width) / 2, Game::DIM.y / 4 + yOffset);
         yOffset += 40;
         window.draw(text);
     }

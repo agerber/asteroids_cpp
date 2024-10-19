@@ -4,7 +4,7 @@
 Asteroid::Asteroid(const Asteroid &astExploded)
 {
     int newSize = astExploded.getSize() + 1;
-    *this = Asteroid(newSize);
+    setSize(newSize);
     setCenter(astExploded.getCenter());
 
     // Adjust speed based on the size of the new smaller asteroid
@@ -19,8 +19,8 @@ std::vector<sf::Vector2f> Asteroid::generateVertices()
 
     // Lambda to generate random polar points
     auto polarPointSupplier = []() -> PolarPoint {
-        double r = (800 + Game::R.nextInt(200)) / 1000.0;
-        double theta = Game::R.nextInt(MAX_RADIANS_X1000) / 1000.0;
+        double r = (800 + Game::nextInt(200)) / 1000.0;
+        double theta = Game::nextInt(MAX_RADIANS_X1000) / 1000.0;
         return PolarPoint(r, theta);
     };
 
@@ -33,7 +33,7 @@ std::vector<sf::Vector2f> Asteroid::generateVertices()
     };
 
     // Generate a random number of vertices
-    int VERTICES = Game::R.nextInt(7) + 25;
+    int VERTICES = Game::nextInt(7) + 25;
 
     // Generate, sort, and convert polar points to cartesian coordinates
     std::vector<PolarPoint> polarPoints;

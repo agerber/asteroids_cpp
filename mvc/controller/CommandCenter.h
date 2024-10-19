@@ -71,7 +71,22 @@ private:
 public:
     std::list<std::shared_ptr<Movable>> getMovFoes() const
     {
-        return this->movFoes;
+        return movFoes;
+    }
+
+    std::list<std::shared_ptr<Movable>> getMovFriends() const
+    {
+        return movFriends;
+    }
+
+    std::list<std::shared_ptr<Movable>> getMovFloaters() const
+    {
+        return movFloaters;
+    }
+
+    std::list<std::shared_ptr<Movable>> getMovDebris() const
+    {
+        return movDebris;
     }
 
 
@@ -136,7 +151,6 @@ public:
     GameOpsQueue& getOpsQueue() { return opsQueue; }
 };
 
-// Initialize the singleton instance to null
-CommandCenter* CommandCenter::instance = nullptr;
+
 
 #endif

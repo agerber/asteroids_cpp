@@ -1,6 +1,8 @@
 #include "CommandCenter.h"
 #include "Game.h"
 
+CommandCenter* CommandCenter::instance = nullptr;
+
 void CommandCenter::generateStarField()
 {
     int count = 100;
@@ -17,8 +19,8 @@ void CommandCenter::initFalconAndDecrementFalconNum()
     soundCondVar.notify_one();
     falcon->setShield(Falcon::INITIAL_SPAWN_TIME);
     falcon->setInvisible(Falcon::INITIAL_SPAWN_TIME / 4);
-    falcon->setCenter(sf::Vector2f(Game::DIM.width / 2, Game::DIM.height / 2));
-    falcon->setOrientation(Game::R.nextInt(360 / Falcon::TURN_STEP) * Falcon::TURN_STEP);
+    falcon->setCenter(sf::Vector2f(Game::DIM.x / 2, Game::DIM.y / 2));
+    falcon->setOrientation(Game::nextInt(360 / Falcon::TURN_STEP) * Falcon::TURN_STEP);
     falcon->setDeltaX(0);
     falcon->setDeltaY(0);
     falcon->setRadius(Falcon::MIN_RADIUS);
