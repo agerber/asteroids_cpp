@@ -2,8 +2,8 @@
 
 1. Clone the repository:
     ```bash
-    git clone "url"
-    cd project-directory
+    git clone https://github.com/agerber/asteroids_cpp.git
+    cd asteroids_cpp
     ```
 
 2. Make build scripts executable:
