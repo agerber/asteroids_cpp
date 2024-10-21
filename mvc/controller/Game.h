@@ -28,7 +28,7 @@ public:
         window(sf::VideoMode(1100, 900), "Asteroid"),
         gamePanel(window),
         isRunning(true),
-        animationThread(&Game::run, this)
+        animationThread(&Game::runAnimations, this)
     {
         // Load sounds
         thrustBuffer.loadFromFile("whitenoise.wav");
@@ -48,6 +48,7 @@ public:
     static const int FRAMES_PER_SECOND();
 
     void run();
+    void runAnimations();
 
     static const sf::Vector2u DIM;
 
@@ -67,7 +68,7 @@ private:
         return distance;
     }
 
-    void handleInput();
+    void handleInput(const sf::Event &event, bool isReleased = false);
 
     void checkCollisions();
 

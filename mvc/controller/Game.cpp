@@ -18,11 +18,27 @@ void Game::run()
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
+            } else if (event.type == sf::Event::KeyPressed) {
+                std::cout << "Key pressed" << std::endl;
+                handleInput(event);
+            } else if (event.type == sf::Event::KeyReleased) {
+                std::cout << "Key pressed" << std::endl;
+                handleInput(event, true);
             }
         }
-
-        handleInput();
+        //handleInput();
         gamePanel.update();
+
+        CommandCenter::getInstance()->incrementFrame();
+
+        // Control frame rate
+        sf::sleep(sf::milliseconds(ANIMATION_DELAY));
+    }
+}
+
+void Game::runAnimations()
+{
+    while (isRunning && window.isOpen()) {
         checkCollisions();
         checkNewLevel();
         checkFloaters();
@@ -34,29 +50,64 @@ void Game::run()
     }
 }
 
-void Game::handleInput()
+void Game::handleInput(const sf::Event &event, bool isReleased)
 {
     Falcon* falcon = CommandCenter::getInstance()->getFalcon();
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
+
+
+    // Handle discrete actions (one-time events)
+    switch (event.key.code)
+    {
+    case sf::Keyboard::P: {
         CommandCenter::getInstance()->setPaused(!CommandCenter::getInstance()->isPaused());
         if (CommandCenter::getInstance()->isPaused()) {
             stopLoopingSounds(soundBackground, soundThrust);
         }
+        break;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+    case sf::Keyboard::Q: {
         window.close();
+        break;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-        falcon->setThrusting(true);
-        soundThrust.setLoop(true);
-        soundThrust.play();
+    case sf::Keyboard::S: {
+        if (CommandCenter::getInstance()->isGameOver()) {
+            CommandCenter::getInstance()->initGame();
+        }
+        break;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-        falcon->setTurnState(Falcon::TurnState::LEFT);
+    case sf::Keyboard::Up: {
+        if (!isReleased) {
+            falcon->setThrusting(true);
+            soundThrust.setLoop(true);
+            soundThrust.play();
+        } else {
+            falcon->setThrusting(false);
+            soundThrust.stop();
+        }
+        break;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-        falcon->setTurnState(Falcon::TurnState::RIGHT);
+    case sf::Keyboard::Left: {
+        if (isReleased) {
+            falcon->setTurnState(Falcon::TurnState::IDLE);
+        } else {
+            falcon->setTurnState(Falcon::TurnState::LEFT);
+        }
+        break;
     }
+    case sf::Keyboard::Right: {
+        if (isReleased) {
+            falcon->setTurnState(Falcon::TurnState::IDLE);
+        } else {
+            falcon->setTurnState(Falcon::TurnState::RIGHT);
+        }
+        break;
+    }
+    case sf::Keyboard::Down: {
+
+    }
+    }
+
+
 }
 
 void Game::checkCollisions()

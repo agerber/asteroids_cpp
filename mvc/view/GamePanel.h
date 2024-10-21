@@ -29,10 +29,10 @@ private:
     sf::RenderTexture offscreenBuffer;
 
     void initFontInfo() {
-        if (!fontNormal.loadFromFile("SansSerif-Bold.ttf")) {
+        if (!fontNormal.loadFromFile("resources/fonts/big.ttf")) {
             // Handle error
         }
-        if (!fontBig.loadFromFile("SansSerif-BoldItalic.ttf")) {
+        if (!fontBig.loadFromFile("resources/fonts/light.ttf")) {
             // Handle error
         }
         text.setFont(fontNormal);
