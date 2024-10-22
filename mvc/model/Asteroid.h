@@ -14,57 +14,19 @@
 class Asteroid : public Sprite {
 private:
     const int LARGE_RADIUS = 110;
-    void setSize(int size)
-    {
-        // Size determines if the asteroid is large, medium, or small
-        if (size == 0)
-            setRadius(LARGE_RADIUS); // Large asteroid
-        else
-            setRadius(LARGE_RADIUS / (size * 2)); // Medium or small asteroid
-    }
+    void setSize(int size);
 
 public:
     // Constructor for creating asteroids of different sizes
-    Asteroid(int size) {
-        setSize(size);
-
-        // Set as FOE
-        setTeam(Team::FOE);
-        setColor(sf::Color::White);
-
-        // Set random spin and deltas
-        setSpin(somePosNegValue(10));
-        setDeltaX(somePosNegValue(10));
-        setDeltaY(somePosNegValue(10));
-
-        // Generate cartesian points representing vertices
-        setCartesians(generateVertices());
-    }
-
+    Asteroid(int size);
     // Overloaded constructor for creating smaller asteroids from an exploded one
     Asteroid(const Asteroid& astExploded);
-
     // Convert radius to integer representing size: 0 = large, 1 = medium, 2 = small
-    int getSize() const {
-        switch (getRadius()) {
-        case 110:
-            return 0;
-        case 55:
-            return 1;
-        case 27:
-            return 2;
-        default:
-            return 0;
-        }
-    }
-
+    int getSize() const;
     // Generate vertices for the asteroid shape
     std::vector<sf::Vector2f> generateVertices();
-
     // Override the draw method to render the asteroid as a vector graphic
-    void draw(sf::RenderWindow& window) override {
-        renderVector(window);
-    }
+    void draw(sf::RenderWindow& window) override { renderVector(window); }
 };
 
 #endif

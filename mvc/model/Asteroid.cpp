@@ -1,6 +1,32 @@
 #include "Asteroid.h"
 #include "Game.h"
 
+void Asteroid::setSize(int size)
+{
+    // Size determines if the asteroid is large, medium, or small
+    if (size == 0)
+        setRadius(LARGE_RADIUS); // Large asteroid
+    else
+        setRadius(LARGE_RADIUS / (size * 2)); // Medium or small asteroid
+}
+
+Asteroid::Asteroid(int size)
+{
+    setSize(size);
+
+    // Set as FOE
+    setTeam(Team::FOE);
+    setColor(sf::Color::White);
+
+    // Set random spin and deltas
+    setSpin(somePosNegValue(10));
+    setDeltaX(somePosNegValue(10));
+    setDeltaY(somePosNegValue(10));
+
+    // Generate cartesian points representing vertices
+    setCartesians(generateVertices());
+}
+
 Asteroid::Asteroid(const Asteroid &astExploded)
 {
     int newSize = astExploded.getSize() + 1;
@@ -10,6 +36,20 @@ Asteroid::Asteroid(const Asteroid &astExploded)
     // Adjust speed based on the size of the new smaller asteroid
     setDeltaX(astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSize * 2));
     setDeltaY(astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSize * 2));
+}
+
+int Asteroid::getSize() const
+{
+    switch (getRadius()) {
+    case 110:
+        return 0;
+    case 55:
+        return 1;
+    case 27:
+        return 2;
+    default:
+        return 0;
+    }
 }
 
 std::vector<sf::Vector2f> Asteroid::generateVertices()

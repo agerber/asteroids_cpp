@@ -38,9 +38,6 @@ public:
         return false; // By default, sprites are not protected
     }
 
-
-
-
     void setDeltaX(double dx) { deltaX = dx; }
     double getDeltaX() const { return deltaX; }
 
@@ -67,9 +64,6 @@ public:
     std::map<int, std::shared_ptr<sf::Texture>> getRasterMap() const { return rasterMap; }
 
 
-
-
-
 protected:
     virtual void draw(sf::RenderWindow& window) override = 0;
 
@@ -77,42 +71,10 @@ protected:
 
     int somePosNegValue(int seed);
 
-    void renderVector(sf::RenderWindow& window)
-    {
-        sf::ConvexShape polygon;
-        polygon.setPointCount(cartesians.size());
-
-        // Adjust cartesians for location and apply transformations
-        for (size_t i = 0; i < cartesians.size(); ++i) {
-            float x = cartesians[i].x * radius * std::sin(orientation * (3.14159 / 180)) + center.x;
-            float y = cartesians[i].y * radius * std::cos(orientation * (3.14159 / 180)) + center.y;
-            polygon.setPoint(i, sf::Vector2f(x, y));
-        }
-
-        polygon.setFillColor(color);
-        window.draw(polygon);
-    }
-    std::shared_ptr<sf::Texture> loadGraphic(const std::string& imagePath)
-    {
-        auto texture = std::make_shared<sf::Texture>();
-        if (!texture->loadFromFile(imagePath)) {
-            std::cerr << "Error loading image: " << imagePath << std::endl;
-            return nullptr;
-        }
-        return texture;
-    }
-    void renderRaster(sf::RenderWindow& window, const std::shared_ptr<sf::Texture>& texture)
-    {
-        if (!texture) return;
-
-        sf::Sprite sprite;
-        sprite.setTexture(*texture);
-        sprite.setPosition(center.x - radius, center.y - radius);
-        sprite.setRotation(orientation);
-        sprite.setScale(static_cast<float>(radius) * 2 / texture->getSize().x,
-                        static_cast<float>(radius) * 2 / texture->getSize().y);
-        window.draw(sprite);
-    }
+    void renderVector(sf::RenderWindow& window);
+    std::shared_ptr<sf::Texture> loadGraphic(const std::string& imagePath);
+    void renderRaster(sf::RenderWindow& window, const std::shared_ptr<sf::Texture>& texture);
+    void renderRaster(sf::RenderWindow& window, const std::shared_ptr<sf::Texture>& texture, int diam);
 
 private:
     sf::Vector2f center;

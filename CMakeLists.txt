@@ -25,7 +25,11 @@ add_executable(asteroid main.cpp ${MVC_SRCS}
     mvc/model/Sprite.h mvc/model/Star.h
     mvc/controller/CommandCenter.h mvc/controller/Game.h
     mvc/controller/GameOp.h mvc/controller/GameOpsQueue.h
-    mvc/controller/utils.h mvc/view/GameFrame.h mvc/view/GamePanel.h)
+    mvc/controller/utils.h mvc/view/GameFrame.h mvc/view/GamePanel.h
+    mvc/model/whiteclouddebris.cpp
+    mvc/model/nuke.cpp
+    mvc/model/Floater.cpp
+    mvc/model/Brick.cpp)
 
 # Link SFML libraries to the executable
 target_link_libraries(asteroid sfml-graphics sfml-window sfml-system sfml-audio)
