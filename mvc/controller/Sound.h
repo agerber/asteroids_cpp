@@ -10,6 +10,10 @@
 #include <condition_variable>
 #include <atomic>
 
+
+const std::string sound_files_path = "resources/sounds/";
+
+
 class Sound {
 private:
     std::queue<std::string> soundQueue;
@@ -17,7 +21,6 @@ private:
     std::condition_variable soundCondVar;
     std::vector<std::thread> soundThreads;
     std::atomic<bool> terminateSoundThreads;
-
 
 
     // Private constructor to prevent instantiation
@@ -55,8 +58,10 @@ private:
 
     // Plays a sound from the specified file path using SFML
     void playSoundFromFile(const std::string& filePath) {
+
+
         sf::SoundBuffer buffer;
-        if (!buffer.loadFromFile(filePath)) {
+        if (!buffer.loadFromFile(sound_files_path + filePath)) {
             std::cerr << "Error loading sound file: " << filePath << std::endl;
             return;
         }
@@ -90,7 +95,7 @@ public:
     // Play a looping sound
     std::shared_ptr<sf::Music> clipForLoopFactory(const std::string& fileName) {
         auto music = std::make_shared<sf::Music>();
-        std::string filePath = "sounds/" + fileName;
+        std::string filePath = sound_files_path + fileName;
         if (!music->openFromFile(filePath)) {
             std::cerr << "Error loading looping sound: " << filePath << std::endl;
             return nullptr;

@@ -25,7 +25,7 @@ public:
         // Load the brick image and add it to the raster map
         std::map<int, std::shared_ptr<sf::Texture>> rasterMap;
         auto texture = std::make_shared<sf::Texture>();
-        if (texture->loadFromFile("imgs/brick/Brick_Block100.png")) {
+        if (texture->loadFromFile("resources/imgs/brick/Brick_Block100.png")) {
             rasterMap[BRICK_IMAGE] = texture;
         } else {
             std::cerr << "Error: Unable to load image: imgs/brick/Brick_Block100.png" << std::endl;

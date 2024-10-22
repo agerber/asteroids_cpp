@@ -55,14 +55,14 @@ public:
         turnState = TurnState::IDLE;
 
         // Load images
-        std::map<ImageState, std::shared_ptr<sf::Texture>> rasterMap;
-        rasterMap[ImageState::FALCON_INVISIBLE] = nullptr;
-        rasterMap[ImageState::FALCON] = loadGraphic("resources/imgs/fal/falcon125.png");
-        rasterMap[ImageState::FALCON_THR] = loadGraphic("resources/imgs/fal/falcon125_thr.png");
-        rasterMap[ImageState::FALCON_PRO] = loadGraphic("resources/imgs/fal/falcon125_PRO.png");
-        rasterMap[ImageState::FALCON_PRO_THR] = loadGraphic("resources/imgs/fal/falcon125_PRO_thr.png");
+        std::map<int, std::shared_ptr<sf::Texture>> rasterMap;
+        rasterMap[static_cast<int>(ImageState::FALCON_INVISIBLE)] = nullptr;
+        rasterMap[static_cast<int>(ImageState::FALCON)] = loadGraphic("resources/imgs/fal/falcon125.png");
+        rasterMap[static_cast<int>(ImageState::FALCON_THR)] = loadGraphic("resources/imgs/fal/falcon125_thr.png");
+        rasterMap[static_cast<int>(ImageState::FALCON_PRO)] = loadGraphic("resources/imgs/fal/falcon125_PRO.png");
+        rasterMap[static_cast<int>(ImageState::FALCON_PRO_THR)] = loadGraphic("resources/imgs/fal/falcon125_PRO_thr.png");
 
-        //setRasterMap( rasterMap );
+        setRasterMap( rasterMap );
     }
 
     // Check if the Falcon is protected

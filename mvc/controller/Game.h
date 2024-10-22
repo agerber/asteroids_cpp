@@ -28,11 +28,12 @@ public:
         window(sf::VideoMode(1100, 900), "Asteroid"),
         gamePanel(window),
         isRunning(true),
-        animationThread(&Game::runAnimations, this)
+        animationThread(&Game::runAnimations, this),
+        gameStarted(false)
     {
         // Load sounds
-        thrustBuffer.loadFromFile("whitenoise.wav");
-        backgroundBuffer.loadFromFile("music-background.wav");
+        thrustBuffer.loadFromFile(sound_files_path + "whitenoise.wav");
+        backgroundBuffer.loadFromFile(sound_files_path + "music-background.wav");
         soundThrust.setBuffer(thrustBuffer);
         soundBackground.setBuffer(backgroundBuffer);
 
@@ -60,6 +61,7 @@ private:
     sf::Sound soundThrust, soundBackground;
     sf::Thread animationThread;
     bool isRunning;
+    bool gameStarted;
 
     float getDistance(const sf::Vector2<float> vec1, const sf::Vector2<float> vec2)
     {
@@ -68,7 +70,8 @@ private:
         return distance;
     }
 
-    void handleInput(const sf::Event &event, bool isReleased = false);
+    void handlekeyPressed(const sf::Event &event);
+    void handlekeyRelease(const sf::Event &event);
 
     void checkCollisions();
 

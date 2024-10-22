@@ -1,5 +1,7 @@
 #include "Game.h"
 #include "Asteroid.h"
+#include "Nuke.h"
+#include "Bullet.h"
 
 const sf::Vector2u Game::DIM(1100, 900);
 std::mt19937 Game::R(std::random_device{}());
@@ -20,13 +22,14 @@ void Game::run()
                 window.close();
             } else if (event.type == sf::Event::KeyPressed) {
                 std::cout << "Key pressed" << std::endl;
-                handleInput(event);
+                handlekeyPressed(event);
             } else if (event.type == sf::Event::KeyReleased) {
                 std::cout << "Key pressed" << std::endl;
-                handleInput(event, true);
+                handlekeyRelease(event);
             }
         }
         //handleInput();
+        window.clear();
         gamePanel.update();
 
         CommandCenter::getInstance()->incrementFrame();
@@ -40,17 +43,15 @@ void Game::runAnimations()
 {
     while (isRunning && window.isOpen()) {
         checkCollisions();
-        checkNewLevel();
+        //checkNewLevel();
         checkFloaters();
-
         CommandCenter::getInstance()->incrementFrame();
-
         // Control frame rate
         sf::sleep(sf::milliseconds(ANIMATION_DELAY));
     }
 }
 
-void Game::handleInput(const sf::Event &event, bool isReleased)
+void Game::handlekeyPressed(const sf::Event &event)
 {
     Falcon* falcon = CommandCenter::getInstance()->getFalcon();
 
@@ -72,42 +73,86 @@ void Game::handleInput(const sf::Event &event, bool isReleased)
     case sf::Keyboard::S: {
         if (CommandCenter::getInstance()->isGameOver()) {
             CommandCenter::getInstance()->initGame();
+            gameStarted = true;
         }
         break;
     }
     case sf::Keyboard::Up: {
-        if (!isReleased) {
-            falcon->setThrusting(true);
-            soundThrust.setLoop(true);
-            soundThrust.play();
-        } else {
-            falcon->setThrusting(false);
-            soundThrust.stop();
-        }
+        falcon->setThrusting(true);
+        soundThrust.setLoop(true);
+        soundThrust.play();
         break;
     }
     case sf::Keyboard::Left: {
-        if (isReleased) {
-            falcon->setTurnState(Falcon::TurnState::IDLE);
-        } else {
-            falcon->setTurnState(Falcon::TurnState::LEFT);
-        }
+        falcon->setTurnState(Falcon::TurnState::LEFT);
         break;
     }
     case sf::Keyboard::Right: {
-        if (isReleased) {
-            falcon->setTurnState(Falcon::TurnState::IDLE);
-        } else {
-            falcon->setTurnState(Falcon::TurnState::RIGHT);
+        falcon->setTurnState(Falcon::TurnState::RIGHT);
+        break;
+    }
+    }
+
+
+}
+
+/**
+    private static final int
+            PAUSE = 80, // p key
+            QUIT = 81, // q key
+            LEFT = 37, // rotate left; left arrow
+            RIGHT = 39, // rotate right; right arrow
+            UP = 38, // thrust; up arrow
+            START = 83, // s key
+            FIRE = 32, // space key
+            MUTE = 77, // m-key mute
+
+            NUKE = 78; // n-key mute
+ */
+
+void Game::handlekeyRelease(const sf::Event &event)
+{
+    CommandCenter* cm = CommandCenter::getInstance();
+    Falcon* falcon = cm->getFalcon();
+
+
+    // Handle discrete actions (one-time events)
+    switch (event.key.code)
+    {
+    case sf::Keyboard::Space: {
+        std::shared_ptr<Bullet> bullet = std::make_shared<Bullet>(*falcon);
+        cm->getOpsQueue().enqueue(bullet, GameOp::Action::ADD);
+        break;
+    }
+    case sf::Keyboard::P: {
+        CommandCenter::getInstance()->setPaused(!CommandCenter::getInstance()->isPaused());
+        if (CommandCenter::getInstance()->isPaused()) {
+            stopLoopingSounds(soundBackground, soundThrust);
         }
+        break;
+    }
+    case sf::Keyboard::N: {
+        if (falcon->getNukeMeter() > 0 ) {
+            std::shared_ptr<Nuke> nuke = std::make_shared<Nuke>(*falcon);
+            cm->getOpsQueue().enqueue(nuke, GameOp::Action::ADD);
+            Sound::getInstance().playSound("nuke.wav");
+            falcon->setNukeMeter(0);
+        }
+    }
+    case sf::Keyboard::Up: {
+        falcon->setThrusting(false);
+        soundThrust.stop();
+        break;
+    }
+    case sf::Keyboard::Left:
+    case sf::Keyboard::Right: {
+        falcon->setTurnState(Falcon::TurnState::IDLE);
         break;
     }
     case sf::Keyboard::Down: {
 
     }
     }
-
-
 }
 
 void Game::checkCollisions()
@@ -167,26 +212,40 @@ void Game::checkNewLevel()
 
 void Game::processGameOpsQueue()
 {
-    while (!CommandCenter::getInstance()->getOpsQueue().isEmpty()) {
+    CommandCenter* cm = CommandCenter::getInstance();
+    while (!cm->getOpsQueue().isEmpty()) {
         GameOp gameOp = CommandCenter::getInstance()->getOpsQueue().dequeue();
-        auto mov = gameOp.getMovable();
-        auto action = gameOp.getAction();
-        switch (mov->getTeam()) {
+        std::shared_ptr<Movable> mov = gameOp.getMovable();
+        GameOp::Action action = gameOp.getAction();
+        Movable::Team team = mov->getTeam();
+        switch (team) {
         case Movable::Team::FOE:
-            action == GameOp::Action::ADD ? CommandCenter::getInstance()->getMovFoes().push_back(mov)
-                                          : CommandCenter::getInstance()->getMovFoes().remove(mov);
+            if ( action == GameOp::Action::ADD) {
+                CommandCenter::getInstance()->getMovFoes().push_back(mov);
+            } else {
+                CommandCenter::getInstance()->getMovFoes().remove(mov);
+            }
             break;
         case Movable::Team::FRIEND:
-            action == GameOp::Action::ADD ? CommandCenter::getInstance()->getMovFriends().push_back(mov)
-                                          : CommandCenter::getInstance()->getMovFriends().remove(mov);
+            if ( action == GameOp::Action::ADD) {
+                CommandCenter::getInstance()->getMovFriends().push_back(mov);
+            } else {
+                CommandCenter::getInstance()->getMovFriends().remove(mov);
+            }
             break;
         case Movable::Team::FLOATER:
-            action == GameOp::Action::ADD ? CommandCenter::getInstance()->getMovFloaters().push_back(mov)
-                                          : CommandCenter::getInstance()->getMovFloaters().remove(mov);
+            if ( action == GameOp::Action::ADD) {
+                CommandCenter::getInstance()->getMovFloaters().push_back(mov);
+            } else {
+                CommandCenter::getInstance()->getMovFloaters().remove(mov);
+            }
             break;
         case Movable::Team::DEBRIS:
-            action == GameOp::Action::ADD ? CommandCenter::getInstance()->getMovDebris().push_back(mov)
-                                          : CommandCenter::getInstance()->getMovDebris().remove(mov);
+            if ( action == GameOp::Action::ADD) {
+                CommandCenter::getInstance()->getMovDebris().push_back(mov);
+            } else {
+                CommandCenter::getInstance()->getMovDebris().remove(mov);
+            }
             break;
         }
     }
@@ -235,7 +294,8 @@ void Game::spawnBigAsteroids(int num)
 
 bool Game::isBrickFree()
 {
-    for (auto& movFoe : CommandCenter::getInstance()->getMovFoes()) {
+    CommandCenter* cm = CommandCenter::getInstance();
+    for (auto& movFoe : cm->getMovFoes()) {
         if (dynamic_cast<Brick*>(movFoe.get())) {
             return false;
         }
@@ -245,7 +305,8 @@ bool Game::isBrickFree()
 
 bool Game::isLevelClear()
 {
-    for (auto& movFoe : CommandCenter::getInstance()->getMovFoes()) {
+    CommandCenter* cm = CommandCenter::getInstance();
+    for (auto& movFoe : cm->getMovFoes()) {
         if (dynamic_cast<Asteroid*>(movFoe.get())) {
             return false;
         }

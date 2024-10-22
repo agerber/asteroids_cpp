@@ -28,8 +28,20 @@ void CommandCenter::initFalconAndDecrementFalconNum()
     falcon->setNukeMeter(0);
 }
 
+void CommandCenter::clearAll()
+{
+    movDebris.clear();
+    movFriends.clear();
+    movFoes.clear();
+    movFloaters.clear();
+}
+
+bool CommandCenter::isGameOver() const
+{
+    return numFalcons < 1;
+}
+
 Falcon *CommandCenter::getFalcon() const
 {
-    static Falcon falcon;
-    return &falcon;
+    return falcon.get();
 }

@@ -15,15 +15,15 @@ public:
 
         // Load graphics into the raster map
         std::map<int, std::shared_ptr<sf::Texture>> rasterMap;
-        rasterMap[0] = loadGraphic("imgs/exp/row-1-column-1.png");
-        rasterMap[1] = loadGraphic("imgs/exp/row-1-column-2.png");
-        rasterMap[2] = loadGraphic("imgs/exp/row-1-column-3.png");
-        rasterMap[3] = loadGraphic("imgs/exp/row-2-column-1.png");
-        rasterMap[4] = loadGraphic("imgs/exp/row-2-column-2.png");
-        rasterMap[5] = loadGraphic("imgs/exp/row-2-column-3.png");
-        rasterMap[6] = loadGraphic("imgs/exp/row-3-column-1.png");
-        rasterMap[7] = loadGraphic("imgs/exp/row-3-column-2.png");
-        rasterMap[8] = loadGraphic("imgs/exp/row-3-column-3.png");
+        rasterMap[0] = loadGraphic("resources/imgs/exp/row-1-column-1.png");
+        rasterMap[1] = loadGraphic("resources/imgs/exp/row-1-column-2.png");
+        rasterMap[2] = loadGraphic("resources/imgs/exp/row-1-column-3.png");
+        rasterMap[3] = loadGraphic("resources/imgs/exp/row-2-column-1.png");
+        rasterMap[4] = loadGraphic("resources/imgs/exp/row-2-column-2.png");
+        rasterMap[5] = loadGraphic("resources/imgs/exp/row-2-column-3.png");
+        rasterMap[6] = loadGraphic("resources/imgs/exp/row-3-column-1.png");
+        rasterMap[7] = loadGraphic("resources/imgs/exp/row-3-column-2.png");
+        rasterMap[8] = loadGraphic("resources/imgs/exp/row-3-column-3.png");
 
         setRasterMap(rasterMap);
 

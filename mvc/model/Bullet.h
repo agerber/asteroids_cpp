@@ -12,7 +12,7 @@ public:
     Bullet(const Falcon& falcon) {
         // Set as a friendly unit
         setTeam(Team::FRIEND);
-        setColor(sf::Color::Orange);
+        setColor(sf::Color(255,215,0));
 
         // Bullet expires after 20 frames
         setExpiry(20);

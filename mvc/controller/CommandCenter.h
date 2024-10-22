@@ -69,22 +69,22 @@ private:
     }
 
 public:
-    std::list<std::shared_ptr<Movable>> getMovFoes() const
+    std::list<std::shared_ptr<Movable>>& getMovFoes()
     {
         return movFoes;
     }
 
-    std::list<std::shared_ptr<Movable>> getMovFriends() const
+    std::list<std::shared_ptr<Movable>>& getMovFriends()
     {
         return movFriends;
     }
 
-    std::list<std::shared_ptr<Movable>> getMovFloaters() const
+    std::list<std::shared_ptr<Movable>>& getMovFloaters()
     {
         return movFloaters;
     }
 
-    std::list<std::shared_ptr<Movable>> getMovDebris() const
+    std::list<std::shared_ptr<Movable>>& getMovDebris()
     {
         return movDebris;
     }
@@ -117,16 +117,9 @@ public:
         frame = frame < LONG_MAX ? frame + 1 : 0;
     }
 
-    void clearAll() {
-        movDebris.clear();
-        movFriends.clear();
-        movFoes.clear();
-        movFloaters.clear();
-    }
+    void clearAll();
 
-    bool isGameOver() const {
-        return numFalcons < 1;
-    }
+    bool isGameOver() const;
 
     // Getters and Setters
     int getNumFalcons() const { return numFalcons; }

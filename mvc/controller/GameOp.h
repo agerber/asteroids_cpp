@@ -21,10 +21,10 @@ public:
         : movable(movableObj), action(act) {}
 
     // Getters and Setters
-    std::shared_ptr<Movable> getMovable() const { return movable; }
+    std::shared_ptr<Movable>& getMovable() { return movable; }
     void setMovable(std::shared_ptr<Movable> movableObj) { movable = movableObj; }
 
-    Action getAction() const { return action; }
+    Action& getAction() { return action; }
     void setAction(Action act) { action = act; }
 };
 
