@@ -24,32 +24,32 @@ Asteroid::Asteroid(int size)
     setDeltaY(somePosNegValue(10));
 
     // Generate cartesian points representing vertices
-    setCartesians(generateVertices());
+    std::vector<sf::Vector2f> vertices = generateVertices();
+    setCartesians(vertices);
 }
 
 Asteroid::Asteroid(const Asteroid &astExploded)
+    : Asteroid(astExploded.getSize() + 1)
 {
-    int newSize = astExploded.getSize() + 1;
-    setSize(newSize);
     setCenter(astExploded.getCenter());
-
+    int newSmallerSize = astExploded.getSize() + 1;
     // Adjust speed based on the size of the new smaller asteroid
-    setDeltaX(astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSize * 2));
-    setDeltaY(astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSize * 2));
+    setDeltaX(astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSmallerSize * 2));
+    setDeltaY(astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSmallerSize * 2));
 }
 
 int Asteroid::getSize() const
 {
-    switch (getRadius()) {
-    case 110:
-        return 0;
-    case 55:
-        return 1;
-    case 27:
-        return 2;
-    default:
+    if (getRadius() == LARGE_RADIUS) {
         return 0;
     }
+    else if (getRadius() == LARGE_RADIUS / 2) {
+        return 1;
+    }
+    else if (getRadius() == LARGE_RADIUS / 4) {
+        return 2;
+    }
+    return 0;
 }
 
 std::vector<sf::Vector2f> Asteroid::generateVertices()
@@ -59,17 +59,16 @@ std::vector<sf::Vector2f> Asteroid::generateVertices()
 
     // Lambda to generate random polar points
     auto polarPointSupplier = []() -> PolarPoint {
-        double r = (800 + Game::nextInt(200)) / 1000.0;
-        double theta = Game::nextInt(MAX_RADIANS_X1000) / 1000.0;
+        double r = (800 + Game::nextInt(200)) / 1000.0; // Random value between 0.8 and 0.999
+        double theta = Game::nextInt(MAX_RADIANS_X1000) / 1000.0; // Random value between 0 and 6.283
         return PolarPoint(r, theta);
     };
 
     // Lambda to convert polar to cartesian
-    auto polarToCartesian = [](const PolarPoint& pp) -> sf::Vector2f {
-        return sf::Vector2f(
-            static_cast<float>(pp.getR() * 100.0 * std::sin(pp.getTheta())),
-            static_cast<float>(pp.getR() * 100.0 * std::cos(pp.getTheta()))
-            );
+    auto polarToCartesian = [PRECISION](const PolarPoint& pp) -> sf::Vector2f {
+        float x = static_cast<float>(pp.getR() * PRECISION * std::cos(pp.getTheta()));
+        float y = static_cast<float>(pp.getR() * PRECISION * std::sin(pp.getTheta()));
+        return sf::Vector2f(x, y);
     };
 
     // Generate a random number of vertices
@@ -81,13 +80,19 @@ std::vector<sf::Vector2f> Asteroid::generateVertices()
         polarPoints.push_back(polarPointSupplier());
     }
 
+    // Sort by ascending theta values
     std::sort(polarPoints.begin(), polarPoints.end(), [](const PolarPoint& pp1, const PolarPoint& pp2) {
         return pp1.getTheta() < pp2.getTheta();
     });
 
-    // Convert to cartesian and return
+    // Convert to cartesian points
     std::vector<sf::Vector2f> cartesianPoints;
     std::transform(polarPoints.begin(), polarPoints.end(), std::back_inserter(cartesianPoints), polarToCartesian);
 
     return cartesianPoints;
+}
+
+void Asteroid::draw(sf::RenderWindow &window)
+{
+    renderVector(window);
 }

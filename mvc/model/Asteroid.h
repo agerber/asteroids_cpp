@@ -26,7 +26,7 @@ public:
     // Generate vertices for the asteroid shape
     std::vector<sf::Vector2f> generateVertices();
     // Override the draw method to render the asteroid as a vector graphic
-    void draw(sf::RenderWindow& window) override { renderVector(window); }
+    void draw(sf::RenderWindow& window) override;
 };
 
 #endif

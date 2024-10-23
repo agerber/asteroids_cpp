@@ -3,6 +3,58 @@
 
 CommandCenter* CommandCenter::instance = nullptr;
 
+CommandCenter::CommandCenter()
+    :numFalcons(0), level(0), score(0), paused(false), muted(false), frame(0), falcon(std::make_shared<Falcon>())
+{
+    for (int i = 0; i < 5; ++i) {
+        soundThreads.emplace_back(&CommandCenter::soundThreadWorker, this);
+    }
+}
+
+CommandCenter::~CommandCenter()
+{
+    terminateSoundThreads = true;
+    soundCondVar.notify_all();
+    for (auto& thread : soundThreads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+}
+
+void CommandCenter::soundThreadWorker()
+{
+    while (!terminateSoundThreads) {
+        std::unique_lock<std::mutex> lock(soundMutex);
+        soundCondVar.wait(lock, [this] { return !soundQueue.empty() || terminateSoundThreads; });
+        if (terminateSoundThreads) break;
+        std::string sound = soundQueue.front();
+        soundQueue.pop();
+        lock.unlock();
+        Sound::instance()->playSound(sound);
+    }
+}
+
+CommandCenter *CommandCenter::getInstance()
+{
+    if (instance == nullptr) {
+        instance = new CommandCenter();
+    }
+    return instance;
+}
+
+void CommandCenter::initGame()
+{
+    clearAll();
+    generateStarField();
+    level = 0;
+    score = 0;
+    paused = false;
+    numFalcons = 4;
+    initFalconAndDecrementFalconNum();
+    opsQueue.enqueue(falcon, GameOp::Action::ADD);
+}
+
 void CommandCenter::generateStarField()
 {
     int count = 100;
@@ -26,6 +78,11 @@ void CommandCenter::initFalconAndDecrementFalconNum()
     falcon->setRadius(Falcon::MIN_RADIUS);
     falcon->setMaxSpeedAttained(false);
     falcon->setNukeMeter(0);
+}
+
+void CommandCenter::incrementFrame()
+{
+    frame = frame < LONG_MAX ? frame + 1 : 0;
 }
 
 void CommandCenter::clearAll()

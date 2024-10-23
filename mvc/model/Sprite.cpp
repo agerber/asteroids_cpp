@@ -42,14 +42,50 @@ void Sprite::renderVector(sf::RenderWindow &window)
     sf::ConvexShape polygon;
     polygon.setPointCount(cartesians.size());
 
-    // Adjust cartesians for location and apply transformations
-    for (size_t i = 0; i < cartesians.size(); ++i) {
-        float x = cartesians[i].x * radius * std::sin(orientation * (3.14159 / 180)) + center.x;
-        float y = cartesians[i].y * radius * std::cos(orientation * (3.14159 / 180)) + center.y;
-        polygon.setPoint(i, sf::Vector2f(x, y));
+    // 1: Convert raw cartesians to raw polars
+    std::vector<PolarPoint> polars = Utils::cartesianToPolar(cartesians);
+
+    // 2: Rotate raw polars given the orientation of the sprite
+    auto rotatePolarByOrientation = [&](const PolarPoint& pp) -> PolarPoint
+    {
+        float adjustedTheta = pp.getTheta() + Utils::my_qDegreesToRadians(-orientation - 90); // Rotated theta
+        return PolarPoint(pp.getR(), adjustedTheta);
+    };
+
+    // 3: Convert the rotated polars back to cartesians (apply radius scaling correctly)
+    auto polarToCartesian = [&](const PolarPoint& pp) -> sf::Vector2f
+    {
+        // Adjust the scaling to match the original proportions
+        float x = pp.getR() * std::cos(pp.getTheta());
+        float y = pp.getR() * std::sin(pp.getTheta());
+        return sf::Vector2f(x, y);
+    };
+
+    // 4: Adjust for the sprite's location (center point)
+    auto adjustForLocation = [&](const sf::Vector2f& p) -> sf::Vector2f
+    {
+        return sf::Vector2f(center.x + (p.x * radius), center.y - (p.y * radius));
+    };
+
+    // 5: Apply the transformations and set the points on the polygon
+    std::vector<sf::Vector2f> points;
+    for (const auto& pp : polars) {
+        PolarPoint rotated = rotatePolarByOrientation(pp);
+        sf::Vector2f cartesian = polarToCartesian(rotated);
+        sf::Vector2f finalPosition = adjustForLocation(cartesian);
+        points.push_back(finalPosition);
     }
 
-    polygon.setFillColor(color);
+    for (size_t i = 0; i < points.size(); ++i) {
+        polygon.setPoint(i, points[i]);
+    }
+
+    // Set the fill color
+    polygon.setFillColor(sf::Color::Transparent);
+    polygon.setOutlineColor(color);
+    polygon.setOutlineThickness(1.0f);
+
+    // Draw the polygon
     window.draw(polygon);
 }
 

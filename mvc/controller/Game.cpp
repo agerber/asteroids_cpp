@@ -43,7 +43,7 @@ void Game::runAnimations()
 {
     while (isRunning && window.isOpen()) {
         checkCollisions();
-        //checkNewLevel();
+        checkNewLevel();
         checkFloaters();
         CommandCenter::getInstance()->incrementFrame();
         // Control frame rate
@@ -203,10 +203,12 @@ void Game::checkNewLevel()
         CommandCenter::getInstance()->setScore(CommandCenter::getInstance()->getScore() + (10000 * level));
         level++;
         CommandCenter::getInstance()->setLevel(level);
-        spawnBigAsteroids(level);
         auto falcon = CommandCenter::getInstance()->getFalcon();
-        falcon->setShield(Falcon::INITIAL_SPAWN_TIME);
-        falcon->setShowLevel(Falcon::INITIAL_SPAWN_TIME);
+        if (falcon) {
+            spawnBigAsteroids(level);
+            falcon->setShield(Falcon::INITIAL_SPAWN_TIME);
+            falcon->setShowLevel(Falcon::INITIAL_SPAWN_TIME);
+        }
     }
 }
 
@@ -288,7 +290,8 @@ void Game::spawnNukeFloater()
 void Game::spawnBigAsteroids(int num)
 {
     while (num-- > 0) {
-        CommandCenter::getInstance()->getOpsQueue().enqueue(std::make_shared<Asteroid>(0), GameOp::Action::ADD);
+        std::shared_ptr<Asteroid> ast = std::make_shared<Asteroid>(0);
+        CommandCenter::getInstance()->getOpsQueue().enqueue(ast, GameOp::Action::ADD);
     }
 }
 
