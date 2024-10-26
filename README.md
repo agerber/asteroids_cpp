@@ -22,3 +22,7 @@
       ```bash
       ./build_linux.sh
       ```
+4. Execute the executable:
+   ```bash
+      build/asteroid
+   ```
