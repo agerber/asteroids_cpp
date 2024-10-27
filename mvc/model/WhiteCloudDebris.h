@@ -9,7 +9,7 @@
 class WhiteCloudDebris : public Sprite {
 public:
     // Constructor
-    WhiteCloudDebris(const Sprite& explodingSprite);
+    WhiteCloudDebris(Sprite* explodingSprite);
     void draw(sf::RenderWindow& window) override;
 };
 

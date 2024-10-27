@@ -9,7 +9,6 @@
 #include "CommandCenter.h"
 #include "Sound.h"
 #include "GamePanel.h"
-#include "Asteroid.h"
 #include "Movable.h"
 #include "Brick.h"
 
@@ -22,6 +21,7 @@
 #include "NukeFloater.h"
 #include <random>
 
+class Asteroid;
 class Game {
 public:
     Game() :
@@ -93,6 +93,7 @@ private:
 
     void spawnNukeFloater();
 
+    void spawnSmallerAsteroidsOrDebris(std::shared_ptr<Asteroid> originalAsteroid) ;
     void spawnBigAsteroids(int num);
 
     static void stopLoopingSounds(sf::Sound& sound1, sf::Sound& sound2) {

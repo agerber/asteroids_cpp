@@ -34,8 +34,10 @@ Asteroid::Asteroid(const Asteroid &astExploded)
     setCenter(astExploded.getCenter());
     int newSmallerSize = astExploded.getSize() + 1;
     // Adjust speed based on the size of the new smaller asteroid
-    setDeltaX(astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSmallerSize * 2));
-    setDeltaY(astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSmallerSize * 2));
+    double delta_x = astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSmallerSize * 2);
+    double delta_y = astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSmallerSize * 2);
+    setDeltaX(delta_x);
+    setDeltaY(delta_y);
 }
 
 int Asteroid::getSize() const
@@ -66,8 +68,8 @@ std::vector<sf::Vector2f> Asteroid::generateVertices()
 
     // Lambda to convert polar to cartesian
     auto polarToCartesian = [PRECISION](const PolarPoint& pp) -> sf::Vector2f {
-        float x = static_cast<float>(pp.getR() * PRECISION * std::cos(pp.getTheta()));
-        float y = static_cast<float>(pp.getR() * PRECISION * std::sin(pp.getTheta()));
+        float x = static_cast<float>(pp.getR() * PRECISION * std::sin(pp.getTheta()));
+        float y = static_cast<float>(pp.getR() * PRECISION * std::cos(pp.getTheta()));
         return sf::Vector2f(x, y);
     };
 

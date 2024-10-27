@@ -1,7 +1,7 @@
 #include "whiteclouddebris.h"
 
 
-WhiteCloudDebris::WhiteCloudDebris(const Sprite &explodingSprite)
+WhiteCloudDebris::WhiteCloudDebris(Sprite *explodingSprite)
 {
     // Set team as debris
     setTeam(Team::DEBRIS);
@@ -24,11 +24,11 @@ WhiteCloudDebris::WhiteCloudDebris(const Sprite &explodingSprite)
     setExpiry(static_cast<int>(rasterMap.size()));
 
     // Inherit properties from the exploding sprite
-    setSpin(explodingSprite.getSpin());
-    setCenter(explodingSprite.getCenter());
-    setDeltaX(explodingSprite.getDeltaX());
-    setDeltaY(explodingSprite.getDeltaY());
-    setRadius(static_cast<int>(explodingSprite.getRadius() * 1.3));
+    setSpin(explodingSprite->getSpin());
+    setCenter(explodingSprite->getCenter());
+    setDeltaX(explodingSprite->getDeltaX());
+    setDeltaY(explodingSprite->getDeltaY());
+    setRadius(static_cast<int>(explodingSprite->getRadius() * 1.3));
 }
 
 void WhiteCloudDebris::draw(sf::RenderWindow &window)

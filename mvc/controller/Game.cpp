@@ -225,7 +225,12 @@ void Game::processGameOpsQueue()
             if ( action == GameOp::Action::ADD) {
                 CommandCenter::getInstance()->getMovFoes().push_back(mov);
             } else {
+                auto vec = cm->getMovFoes();
                 CommandCenter::getInstance()->getMovFoes().remove(mov);
+                if (auto ast = std::dynamic_pointer_cast<Asteroid>(mov)) {
+                    spawnSmallerAsteroidsOrDebris(ast);
+                }
+                mov.reset();
             }
             break;
         case Movable::Team::FRIEND:
@@ -287,10 +292,31 @@ void Game::spawnNukeFloater()
     }
 }
 
+void Game::spawnSmallerAsteroidsOrDebris(std::shared_ptr<Asteroid> originalAsteroid) {
+
+    int size = originalAsteroid->getSize();
+    //small asteroids
+    if (size > 1) {
+        auto wcd = std::make_shared<WhiteCloudDebris>( originalAsteroid.get() );
+        CommandCenter::getInstance()->getOpsQueue().enqueue( wcd, GameOp::Action::ADD);
+    }
+    //med and large
+    else {
+        //for large (0) and medium (1) sized Asteroids only, spawn 2 or 3 smaller asteroids respectively
+        //We can use the existing variable (size) to do this
+        size += 2;
+        while (size-- > 0) {
+            auto ast = std::make_shared<Asteroid>(*originalAsteroid);
+            CommandCenter::getInstance()->getOpsQueue().enqueue( ast, GameOp::Action::ADD);
+        }
+    }
+
+}
+
 void Game::spawnBigAsteroids(int num)
 {
     while (num-- > 0) {
-        std::shared_ptr<Asteroid> ast = std::make_shared<Asteroid>(0);
+        auto ast = std::make_shared<Asteroid>(0);
         CommandCenter::getInstance()->getOpsQueue().enqueue(ast, GameOp::Action::ADD);
     }
 }
