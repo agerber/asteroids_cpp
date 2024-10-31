@@ -1,24 +1,26 @@
 #ifndef POLARPOINT_H
 #define POLARPOINT_H
 
-#include <QPoint>
-
 class PolarPoint {
+private:
+    double r;      // corresponds to the hypotenuse in Cartesian, value between 0 and 1
+    double theta;  // degrees in radians, value between 0 and 6.283 (2 * PI)
+
 public:
-    // We use the wrapper-class Double as members to get the Comparable interface
-    // because Asteroid needs to sort by theta when generating random-shapes.
+    // Constructor
+    PolarPoint(double radius, double angle) : r(radius), theta(angle) {}
 
-    // corresponds to the hypotenuse in cartesean, number between 0 and 1
-    qreal r;
-    // degrees in radians, number between 0 and 6.283
-    qreal theta;
+    // Getters and Setters
+    double getR() const { return r; }
+    void setR(double radius) { r = radius; }
 
-    PolarPoint(qreal _r = 0, qreal _theta = 0);
+    double getTheta() const { return theta; }
+    void setTheta(double angle) { theta = angle; }
 
-    qreal getTheta() { return theta; }
-
-    qreal getR() { return r; }
-
+    // Overloaded comparison operator for sorting (similar to Java's Comparable interface)
+    bool operator<(const PolarPoint& other) const {
+        return theta < other.theta;
+    }
 };
 
-#endif // POLARPOINT_H
+#endif

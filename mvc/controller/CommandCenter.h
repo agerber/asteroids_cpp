@@ -1,106 +1,83 @@
-//CommandCenter.h
-
 #ifndef COMMANDCENTER_H
 #define COMMANDCENTER_H
 
-#include <QVector>
-#include <QTimer>
-#include "GameOp.h"
-#include "GameOpsQueue.h"
+#include <SFML/Graphics.hpp>
+#include <list>
+#include <memory>
+#include <atomic>
+#include <thread>
+#include <mutex>
+#include <queue>
+#include <condition_variable>
 #include "Falcon.h"
+#include "GameOpsQueue.h"
 #include "Star.h"
+#include "Sound.h"
 
-//The CommandCenter is a singleton that manages the state of the game.
-class CommandCenter : public QObject {
-    Q_OBJECT
-
-public:
-    //the constructor is made private to create a singleton instance of this class
-    static CommandCenter* getInstance();
-
-    //this method initializes the game and its elements
-    void initGame();
-
-    //these methods increment the frame count and decrement the number of numFalcons respectively
-    void incrementFrame();
-    void initFalconAndDecrementFalconNum();
-
-    //methods to add, remove or get op to our list of gameOps
-    void addOp(GameOp op);
-    GameOp* getOp();
-
-
-    //getters and setters for all member properties
-    int getNumFalcons() const;
-    void setNumFalcons(int value);
-
-    int getLevel() const;
-    void setLevel(int value);
-
-    long getScore() const;
-    void setScore(long value);
-
-    bool getPaused() const;
-    void setPaused(bool value);
-
-    bool getMuted() const;
-    void setMuted(bool value);
-
-    long getFrame() const;
-    void setFrame(long frame);
-
-
-    QVector<Movable*>& getMovDebris() ;
-    void setMovDebris(QVector<Movable*>& value);
-
-    QVector<Movable*> & getMovFriends();
-    void setMovFriends(QVector<Movable*>& value);
-
-    QVector<Movable*> & getMovFoes();
-    void setMovFoes( QVector<Movable*>& value);
-
-    QVector<Movable*> &getMovFloaters();
-    void setMovFloaters(QVector<Movable*>& value);
-
-    GameOpsQueue* getOpsQueue();
-    void setOpsQueue(GameOpsQueue* value);
-
-    Falcon* getFalcon() const;
-    Star* getStar() const;
-
-    bool isGameOver();
-
-
-
+class CommandCenter {
 private:
-    //the constructor is made private to create a singleton instance of this class
-    CommandCenter();
-    ~CommandCenter();
-
-    void clearAll();
-    void generateStarField();
-
-    //member variables, including: number of falcons, level, score, paused, and muted boolean values,
-    //a frame counter, a falcon object, and lists containing our movables subdivided by team
     int numFalcons;
     int level;
     long score;
     bool paused;
     bool muted;
-    long frame;
+    std::atomic<long> frame;
 
-    Falcon* falcon;
+    std::shared_ptr<Falcon> falcon;
+    std::list<std::shared_ptr<Movable>> movDebris;
+    std::list<std::shared_ptr<Movable>> movFriends;
+    std::list<std::shared_ptr<Movable>> movFoes;
+    std::list<std::shared_ptr<Movable>> movFloaters;
 
-    QVector<Movable*> movDebris;
-    QVector<Movable*> movFriends;
-    QVector<Movable*> movFoes;
-    QVector<Movable*> movFloaters;
+    GameOpsQueue opsQueue;
+    std::vector<std::thread> soundThreads;
+    std::queue<std::string> soundQueue;
+    std::mutex soundMutex;
+    std::condition_variable soundCondVar;
+    bool terminateSoundThreads = false;
 
-    GameOpsQueue* opsQueue;
+    static CommandCenter* instance;
 
-signals:
-    //signal emitted when the game is over
-    void gameOver();
+    // Private constructor for Singleton pattern
+    CommandCenter();
+
+    ~CommandCenter();
+
+    // Worker thread for playing sounds
+    void soundThreadWorker();
+
+public:
+    std::list<std::shared_ptr<Movable>>& getMovFoes() { return movFoes; }
+    std::list<std::shared_ptr<Movable>>& getMovFriends() { return movFriends; }
+    std::list<std::shared_ptr<Movable>>& getMovFloaters() { return movFloaters; }
+    std::list<std::shared_ptr<Movable>>& getMovDebris() { return movDebris; }
+
+    // Get the singleton instance
+    static CommandCenter* getInstance();
+
+    void initGame();
+    void generateStarField();
+    void initFalconAndDecrementFalconNum();
+    void incrementFrame();
+    void clearAll();
+    bool isGameOver() const;
+
+    // Getters and Setters
+    int getNumFalcons() const { return numFalcons; }
+    void setNumFalcons(int n) { numFalcons = n; }
+    int getLevel() const { return level; }
+    void setLevel(int l) { level = l; }
+    long getScore() const { return score; }
+    void setScore(long s) { score = s; }
+    bool isPaused() const { return paused; }
+    void setPaused(bool p) { paused = p; }
+    bool isMuted() const { return muted; }
+    void setMuted(bool m) { muted = m; }
+    long getFrame() const { return frame; }
+    Falcon* getFalcon() const;
+    GameOpsQueue& getOpsQueue() { return opsQueue; }
 };
 
-#endif // COMMANDCENTER_H
+
+
+#endif

@@ -1,28 +1,23 @@
 #ifndef STAR_H
 #define STAR_H
 
-#include <QObject>
-#include <QPoint>
-#include <QColor>
-#include <QPainter>
-
 #include "Movable.h"
+#include <SFML/Graphics.hpp>
 
 class Star : public Movable {
-    Q_OBJECT
-
 public:
     Star();
-    void draw(QPainter& painter) override;
-    QPoint getCenter() override;
-    int getRadius() override;
-    Movable::Team getTeam() override;
-    bool isProtected() override;
+    // Implement the required methods from the Movable interface
+    void draw(sf::RenderWindow& window) override;
+    sf::Vector2f getCenter() const override { return center; }
+    int getRadius() const override { return 1; }
+    Team getTeam() const override { return Team::DEBRIS; }
+    bool isProtected() const override { return false; }
     void move() override;
 
 private:
-    QPoint center;
-    QColor color;
+    sf::Vector2f center;
+    sf::Color color;
 };
 
-#endif // STA
+#endif // STAR_H

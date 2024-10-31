@@ -1,27 +1,26 @@
 #ifndef BRICK_H
 #define BRICK_H
 
-#include <QPoint>
-#include <QImage>
+#include "Sprite.h"
+
+#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Image.hpp>
 #include <map>
-#include <Sprite.h>
+#include <memory>
 
-class Brick : public Sprite {
 
+class Brick: public Sprite {
 private:
     const int BRICK_IMAGE = 0;
 
 public:
-    //The size of this brick is always square!
-    //we use upperLeftCorner because that is the origin when drawing graphics in Java
-    Brick(QPoint upperLeftCorner, int size);
+    Brick(sf::Vector2f upperLeftCorner, int size);
 
-    void draw(QPainter &painter) override;
+    // Overriding draw method to render the brick
+    void draw(sf::RenderWindow& window) override;
 
-    //the reason we override the move method is to skip the logic contained in super-class Sprite move() method
-    //which is laborious, thereby gaining slight performance
-    void move();
+    // Overriding move method - bricks do not move
+    void move() override;
 };
 
-
-#endif // BRICK_H
+#endif

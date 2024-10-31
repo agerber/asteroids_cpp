@@ -1,81 +1,96 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
-#include <QObject>
-#include <QPoint>
-#include <QMap>
-#include <QString>
-#include <QPainter>
-#include <QColor>
-#include <QVector>
+#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <map>
+#include <vector>
+#include <memory>
+#include <cmath>
+#include <iostream>
 #include "Movable.h"
+#include "PolarPoint.h"
+#include "Utils.h"
+#include "GameOp.h"
 
-class CommandCenter;
-class Game;
 
-class Sprite : public Movable
-{
-    Q_OBJECT
+
+
+class Sprite: public Movable {
+
 public:
-    Sprite(QObject *parent = nullptr);
+    Sprite();
 
-    void setCenter(QPoint center);
-    QPoint getCenter() override;
+    // Getters and setters
+    void setCenter(const sf::Vector2f& c) { center = c; }
+    virtual sf::Vector2f getCenter() const override { return center; }
 
-    void setDeltaX(double deltaX);
-    double getDeltaX() const;
+    void setRadius(int r) { radius = r; }
+    virtual int getRadius() const override { return radius; }
 
-    void setDeltaY(double deltaY);
-    double getDeltaY() const;
+    void setTeam(Team t) { team = t; }
+    virtual Team getTeam() const override { return team; }
 
-    void setTeam(Movable::Team );
-    Movable::Team getTeam() override;
 
-    void setRadius(int radius);
-    int getRadius() override;
+    virtual bool isProtected() const override {
+        return false; // By default, sprites are not protected
+    }
 
-    void setOrientation(int orientation);
-    int getOrientation() ;
+    void setDeltaX(double dx) { deltaX = dx; }
+    double getDeltaX() const { return deltaX; }
 
-    void setExpiry(int expiry);
-    int getExpiry() const;
+    void setDeltaY(double dy) { deltaY = dy; }
+    double getDeltaY() const { return deltaY; }
 
-    void setSpin(int spin);
-    int getSpin() const;
 
-    void setCartesians(QVector<QPoint> points);
-    QVector<QPoint> getCartesians() ;
+    void setOrientation(int o) { orientation = o; }
+    int getOrientation() const { return orientation; }
 
-    void setColor(QColor color);
-    QColor getColor() ;
+    void setExpiry(int e) { expiry = e; }
+    int getExpiry() const { return expiry; }
 
-    void setRasterMap(QMap<int, QImage>& map);
-    QMap<int, QImage>& getRasterMap() ;
+    void setSpin(int s) { spin = s; }
+    int getSpin() const { return spin; }
 
-    virtual void move();
-    virtual bool isProtected();
+    void setCartesians(const std::vector<sf::Vector2f>& c) { cartesians = c; }
+    std::vector<sf::Vector2f> getCartesians() const { return cartesians; }
 
-    static QImage loadGraphic(QString imagePath);
-    void renderRaster(QPainter &painter, QImage image);
-    void renderRaster(QPainter &painter, QImage image, int diam);
-    void renderVector(QPainter &painter);
+    void setColor(const sf::Color& c) { color = c; }
+    sf::Color getColor() const { return color; }
+
+    void setRasterMap(const std::map<int, std::shared_ptr<sf::Texture>>& map) { rasterMap = map; }
+    std::map<int, std::shared_ptr<sf::Texture>> getRasterMap() const { return rasterMap; }
+
 
 protected:
+    virtual void draw(sf::RenderWindow& window) override = 0;
+
+    virtual void move() override;
+
     int somePosNegValue(int seed);
 
-    void expire();
+    void renderVector(sf::RenderWindow& window);
+    std::shared_ptr<sf::Texture> loadGraphic(const std::string& imagePath);
+    void renderRaster(sf::RenderWindow& window, const std::shared_ptr<sf::Texture>& texture);
+    void renderRaster(sf::RenderWindow& window, const std::shared_ptr<sf::Texture>& texture, int diam);
 
 private:
-    QPoint center;
-    double deltaX, deltaY;
-    Movable::Team team;
-    int radius, orientation, expiry, spin;
-    QVector<QPoint> cartesians;
-    QColor color;
-    QMap<int, QImage> rasterMap;
+    sf::Vector2f center;
+    double deltaX = 0, deltaY = 0;
+    Team team;
+    int radius = 0;
+    int orientation = 0;
+    int expiry = 0;
+    int spin = 0;
+    std::vector<sf::Vector2f> cartesians;
+    sf::Color color;
+    std::map<int, std::shared_ptr<sf::Texture>> rasterMap;
 
-signals:
-
+    void expire();
 };
 
-#endif // SPRITE_H
+
+
+#endif

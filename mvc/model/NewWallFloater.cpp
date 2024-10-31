@@ -1,10 +1,7 @@
-#include "newwallFloater.h"
+#include "NewWallFloater.h"
 
-NewWallFloater::NewWallFloater()
+
+int NewWallFloater::SPAWN_NEW_WALL_FLOATER()
 {
-    setColor(MAROON);
-    setExpiry(230);
+    return Game::FRAMES_PER_SECOND() * 40;
 }
-
-int NewWallFloater::SPAWN_NEW_WALL_FLOATER = Game::FRAMES_PER_SECOND * 40;
-    

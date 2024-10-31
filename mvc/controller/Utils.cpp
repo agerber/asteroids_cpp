@@ -1,53 +1,51 @@
-#include "utils.h"
-#include "qmath.h"
 
-#include <QtAlgorithms>
-#define M_PI       3.14159265358979323846   // pi
-/*
-PolarPoint::PolarPoint(double r_in, double theta_in)
-{
-    r = r_in;
-    theta = theta_in;
+#include "Utils.h"
+
+int Utils::randomInt(int min, int max) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(min, max);
+    return dist(gen);
 }
 
-*/
-
-
-QVector<PolarPoint> Utils::cartesianToPolar(QVector<QPoint>  pntCartesians){
-    auto hypotenuseOfPoint = [](QPoint const& pnt) -> double {
-        return sqrt((pnt.x() * pnt.x()) + (pnt.y() * pnt.y()));
-    };
-
-    const double LARGEST_HYP = std::max_element(pntCartesians.constBegin(), pntCartesians.constEnd(),
-                                                [&, hypotenuseOfPoint](const QPoint& left, const QPoint& right) {
-           return hypotenuseOfPoint(left) < hypotenuseOfPoint(right);
-       })->manhattanLength();
-
-       
-    auto cartToPolarTransform = [&hypotenuseOfPoint, &LARGEST_HYP](QPoint const& pnt) -> PolarPoint{
-        double r = hypotenuseOfPoint(pnt) / LARGEST_HYP;
-        double theta = atan2(pnt.y(), pnt.x())/* * 180 / M_PI*/;
-        return {r, theta};
-    };
-
-    QVector<PolarPoint> polarPoints;
-    for(auto& point : pntCartesians)
-    {
-        polarPoints.append(cartToPolarTransform(point));
-    }
-
-    return polarPoints;
+float Utils::distance(float x1, float y1, float x2, float y2) {
+    return std::sqrt(std::pow(x2 - x1, 2) + std::pow(y2 - y1, 2));
 }
-
 
 float Utils::my_qDegreesToRadians(float degrees)
 {
     return degrees * float(M_PI/180);
 }
 
-double Utils::my_getDistances(QPoint x, QPoint y)
+
+std::vector<PolarPoint> Utils::cartesianToPolar(std::vector<sf::Vector2f> pntCartesians)
 {
-    QPoint deltax = y - x;
-     double trueLength = qSqrt(qPow(deltax.x(), 2) + qPow(deltax.y(), 2));
-    return trueLength;
+    // Helper lambda to calculate the hypotenuse of a point
+    auto hypotenuseOfPoint = [](const sf::Vector2f& pnt) -> double {
+        return std::sqrt((pnt.x * pnt.x) + (pnt.y * pnt.y));
+    };
+
+    // Find the largest hypotenuse
+    const double LARGEST_HYP = std::max_element(pntCartesians.begin(), pntCartesians.end(),
+                                                [&, hypotenuseOfPoint](const sf::Vector2f& left, const sf::Vector2f& right) {
+                                                    return hypotenuseOfPoint(left) < hypotenuseOfPoint(right);
+                                                })->x + std::max_element(pntCartesians.begin(), pntCartesians.end(),
+                                                  [&, hypotenuseOfPoint](const sf::Vector2f& left, const sf::Vector2f& right) {
+                                                      return hypotenuseOfPoint(left) < hypotenuseOfPoint(right);
+                                                  })->y;
+
+    // Lambda to convert Cartesian points to Polar
+    auto cartToPolarTransform = [&hypotenuseOfPoint, &LARGEST_HYP](const sf::Vector2f& pnt) -> PolarPoint {
+        double r = hypotenuseOfPoint(pnt) / LARGEST_HYP;
+        double theta = std::atan2(pnt.y, pnt.x);
+        return {r, theta};
+    };
+
+    // Transform each Cartesian point to a Polar point
+    std::vector<PolarPoint> polarPoints;
+    for (const auto& point : pntCartesians) {
+        polarPoints.push_back(cartToPolarTransform(point));
+    }
+
+    return polarPoints;
 }

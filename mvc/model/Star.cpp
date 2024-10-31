@@ -1,34 +1,27 @@
+
 #include "Star.h"
 #include "Game.h"
 
-Star::Star() :
-    center(rand() % Game::DIM.width(), rand() % Game::DIM.height())
+
+
+
+Star::Star()
 {
-    int bright = rand() % 226; //Stars are muted at max brightness of 225 out of 255
-    color = QColor(bright, bright, bright); //some grey value
+    // Randomize the position within the game dimensions
+    center = sf::Vector2f(Game::R() % Game::DIM.x, Game::R() % Game::DIM.y);
+    int bright = Game::R() % 226; // Stars are muted at max brightness of 225 out of 255
+    color = sf::Color(bright, bright, bright); // some grey value
 }
 
-void Star::draw(QPainter& painter) {
-    painter.setPen(color);
-    painter.drawEllipse(center.x(), center.y(), getRadius(), getRadius());
+void Star::draw(sf::RenderWindow &window)
+{
+    sf::CircleShape star(1.0f); // Tiny circle to represent the star
+    star.setPosition(center);
+    star.setFillColor(color);
+    window.draw(star);
 }
 
-QPoint Star::getCenter() {
-    return center;
-}
-
-int Star::getRadius() {
-    return 1;
-}
-
-Movable::Team Star::getTeam() {
-    return DEBRIS;
-}
-
-bool Star::isProtected() {
-    return false;
-}
-
-void Star::move() {
-    // do nothing
+void Star::move()
+{
+// Stars don't move, so do nothing here
 }

@@ -1,461 +1,318 @@
 #include "Game.h"
-#include <QApplication>
-#include <QScreen>
-#include <QKeyEvent>
-#include "game.h"
-
-#include <QApplication>
-#include <QDebug>
-#include <QKeyEvent>
-#include <QRandomGenerator>
-#include <QDateTime>
-#include "qglobal.h"
-
-#include "Utils.h"
-#include "newwallFloater.h"
-#include "ShieldFloater.h"
-#include "NukeFloater.h"
-#include "WhiteCloudDebris.h"
-#include "Bullet.h"
+#include "Asteroid.h"
 #include "Nuke.h"
+#include "Bullet.h"
 
-const QSize Game::DIM(1100, 900); //the dimension of the game.
-const int Game::ANIMATION_DELAY = 40; // milliseconds between frames
-const int Game::FRAMES_PER_SECOND = 1000 / ANIMATION_DELAY;
-// ported to C++ using Qt framework
-
-//todo: Sounds need to be redone using Qt6.6.0
+const sf::Vector2u Game::DIM(1100, 900);
+std::mt19937 Game::R(std::random_device{}());
 
 
-Game::Game(QObject *parent) : QThread(parent)
+const int Game::FRAMES_PER_SECOND()
 {
-    m_pGamePanel = new GamePanel(nullptr, Game::DIM);
-    // add key listener to the game panel
-   m_pGamePanel->setMinimumSize(Game::DIM.width(), Game::DIM.height());
-   // gamePanel->addKeyListener(this);
-   m_pGamePanel->setGameParent(this);
-   m_pGamePanel->show();
-
-    //soundThrust = Sound::clipForLoopFactory("whitenoise.wav");
-    //soundBackground = Sound::clipForLoopFactory("music-background.wav");
-    // fire up the animation threadGame::keyPressed(
-    // pass the animation thread a runnable object, the Game object
-    animationThread = QThread::create(&Game::run, this);
-    animationThread->start();
+    const int FPS = 1000 / ANIMATION_DELAY;
+    return FPS;
 }
 
-void Game::run() {
+void Game::run()
+{
+    while (isRunning && window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            } else if (event.type == sf::Event::KeyPressed) {
+                std::cout << "Key pressed" << std::endl;
+                handlekeyPressed(event);
+            } else if (event.type == sf::Event::KeyReleased) {
+                std::cout << "Key pressed" << std::endl;
+                handlekeyRelease(event);
+            }
+        }
+        //handleInput();
+        window.clear();
+        gamePanel.update();
 
-    // lower animation thread's priority, thereby yielding to the "main" aka 'Event Dispatch'
-    // thread which listens to keystrokes
-    animationThread->setPriority(QThread::LowestPriority);
+        CommandCenter::getInstance()->incrementFrame();
 
-    // and get the current time
-    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+        // Control frame rate
+        sf::sleep(sf::milliseconds(ANIMATION_DELAY));
+    }
+}
 
-    // this thread animates the scene
-    while (animationThread == QThread::currentThread()) {
-
-        m_pGamePanel->update(m_pGamePanel->rect());
-
+void Game::runAnimations()
+{
+    while (isRunning && window.isOpen()) {
         checkCollisions();
         checkNewLevel();
         checkFloaters();
-
-        //keep track of the frame for development purposes
         CommandCenter::getInstance()->incrementFrame();
-
-        // surround the sleep() in a try/catch block
-        // this simply controls delay time between
-        // the frames of the animation
-        try {
-            // The total amount of time is guaranteed to be at least ANIMATION_DELAY long.  If processing (update)
-            // between frames takes longer than ANIMATION_DELAY, then the difference between startTime -
-            // System.currentTimeMillis() will be negative, then zero will be the sleep time
-            startTime += ANIMATION_DELAY;
-
-            QThread::msleep(qMax(0ll, startTime - QDateTime::currentMSecsSinceEpoch()));
-        } catch (...) {
-            // do nothing (bury the exception), and just continue, e.g. skip this frame -- no big deal
-        }
-    } // end while
+        // Control frame rate
+        sf::sleep(sf::milliseconds(ANIMATION_DELAY));
+    }
 }
 
-void Game::setGamePanel(GamePanel* gamePanel)
+void Game::handlekeyPressed(const sf::Event &event)
 {
-    m_pGamePanel = gamePanel;
+    Falcon* falcon = CommandCenter::getInstance()->getFalcon();
+
+
+    // Handle discrete actions (one-time events)
+    switch (event.key.code)
+    {
+    case sf::Keyboard::P: {
+        CommandCenter::getInstance()->setPaused(!CommandCenter::getInstance()->isPaused());
+        if (CommandCenter::getInstance()->isPaused()) {
+            stopLoopingSounds(soundBackground, soundThrust);
+        }
+        break;
+    }
+    case sf::Keyboard::Q: {
+        window.close();
+        break;
+    }
+    case sf::Keyboard::S: {
+        if (CommandCenter::getInstance()->isGameOver()) {
+            CommandCenter::getInstance()->initGame();
+            gameStarted = true;
+        }
+        break;
+    }
+    case sf::Keyboard::Up: {
+        falcon->setThrusting(true);
+        soundThrust.setLoop(true);
+        soundThrust.play();
+        break;
+    }
+    case sf::Keyboard::Left: {
+        falcon->setTurnState(Falcon::TurnState::LEFT);
+        break;
+    }
+    case sf::Keyboard::Right: {
+        falcon->setTurnState(Falcon::TurnState::RIGHT);
+        break;
+    }
+    }
+
+
 }
 
+/**
+    private static final int
+            PAUSE = 80, // p key
+            QUIT = 81, // q key
+            LEFT = 37, // rotate left; left arrow
+            RIGHT = 39, // rotate right; right arrow
+            UP = 38, // thrust; up arrow
+            START = 83, // s key
+            FIRE = 32, // space key
+            MUTE = 77, // m-key mute
 
-void Game::checkFloaters() {
-    spawnNewWallFloater();
-    spawnShieldFloater();
-    spawnNukeFloater();
+            NUKE = 78; // n-key mute
+ */
+
+void Game::handlekeyRelease(const sf::Event &event)
+{
+    CommandCenter* cm = CommandCenter::getInstance();
+    Falcon* falcon = cm->getFalcon();
+
+
+    // Handle discrete actions (one-time events)
+    switch (event.key.code)
+    {
+    case sf::Keyboard::Space: {
+        std::shared_ptr<Bullet> bullet = std::make_shared<Bullet>(*falcon);
+        cm->getOpsQueue().enqueue(bullet, GameOp::Action::ADD);
+        break;
+    }
+    case sf::Keyboard::P: {
+        CommandCenter::getInstance()->setPaused(!CommandCenter::getInstance()->isPaused());
+        if (CommandCenter::getInstance()->isPaused()) {
+            stopLoopingSounds(soundBackground, soundThrust);
+        }
+        break;
+    }
+    case sf::Keyboard::N: {
+        if (falcon->getNukeMeter() > 0 ) {
+            std::shared_ptr<Nuke> nuke = std::make_shared<Nuke>(*falcon);
+            cm->getOpsQueue().enqueue(nuke, GameOp::Action::ADD);
+            Sound::getInstance().playSound("nuke.wav");
+            falcon->setNukeMeter(0);
+        }
+    }
+    case sf::Keyboard::Up: {
+        falcon->setThrusting(false);
+        soundThrust.stop();
+        break;
+    }
+    case sf::Keyboard::Left:
+    case sf::Keyboard::Right: {
+        falcon->setTurnState(Falcon::TurnState::IDLE);
+        break;
+    }
+    case sf::Keyboard::Down: {
+
+    }
+    }
 }
 
-
-void  Game::checkCollisions() {
-    QPoint pntFriendCenter, pntFoeCenter;
-    int radFriend, radFoe;
-    
-    //This has order-of-growth of O(n^2), there is no way around this.
-    for (Movable* movFriend : CommandCenter::getInstance()->getMovFriends()) {
-        for (Movable* movFoe : CommandCenter::getInstance()->getMovFoes()) {
-
-            pntFriendCenter = movFriend->getCenter();
-            pntFoeCenter = movFoe->getCenter();
-            radFriend = movFriend->getRadius();
-            radFoe = movFoe->getRadius();
-
-            //detect collision
-            double w_dblDistance = Utils::my_getDistances(pntFriendCenter, pntFoeCenter);
-            if (w_dblDistance < (radFriend + radFoe)) {
-                //remove the friend (so long as he is not protected)
+void Game::checkCollisions()
+{
+    for (auto& movFriend : CommandCenter::getInstance()->getMovFriends()) {
+        for (auto& movFoe : CommandCenter::getInstance()->getMovFoes()) {
+            if ( getDistance(movFriend->getCenter(), movFoe->getCenter()) < (movFriend->getRadius() + movFoe->getRadius())) {
                 if (!movFriend->isProtected()) {
-                    if (!CommandCenter::getInstance()->getOpsQueue()->isExist(movFriend))
-                        CommandCenter::getInstance()->getOpsQueue()->enqueue(movFriend, GameOp::Action::REMOVE);
+                    CommandCenter::getInstance()->getOpsQueue().enqueue(movFriend, GameOp::Action::REMOVE);
                 }
-                //remove the foe
-                if (!CommandCenter::getInstance()->getOpsQueue()->isExist(movFoe))
-                    CommandCenter::getInstance()->getOpsQueue()->enqueue(movFoe, GameOp::Action::REMOVE);
-                
-                if (dynamic_cast<Brick*>(movFoe) != nullptr) {
+                CommandCenter::getInstance()->getOpsQueue().enqueue(movFoe, GameOp::Action::REMOVE);
+
+                if (dynamic_cast<Brick*>(movFoe.get())) {
                     CommandCenter::getInstance()->setScore(CommandCenter::getInstance()->getScore() + 1000);
-                    //Sound::playSound(":/resources/sounds/rock.wav");
+                    Sound::instance()->playSound("rock.wav");
                 } else {
                     CommandCenter::getInstance()->setScore(CommandCenter::getInstance()->getScore() + 10);
-                    //Sound::playSound(":/resources/sounds/kapow.wav");
+                    Sound::instance()->playSound("kapow.wav");
                 }
             }
+        }
+    }
 
-        }//end inner for
-    }//end outer for
-
-   
-
-    //check for collisions between falcon and floaters. Order of growth of O(n) where n is number of floaters
-    QPoint pntFalCenter = CommandCenter::getInstance()->getFalcon()->getCenter();
-    int radFalcon = CommandCenter::getInstance()->getFalcon()->getRadius();
-
-    QPoint pntFloaterCenter;
-    int radFloater;
-    for (Movable* movFloater : CommandCenter::getInstance()->getMovFloaters()) {
-        pntFloaterCenter = movFloater->getCenter();
-        radFloater = movFloater->getRadius();
-
-        //detect collision
-        double w_dblLength = Utils::my_getDistances(pntFalCenter, pntFloaterCenter);
-        if (w_dblLength < (radFalcon + radFloater)) {
-
-            std::string clazz = typeid(*movFloater).name();
-            
-            if (clazz.find("ShieldFloater") != std::string::npos) {
-                 //Sound::playSound(":/resources/sounds/shieldup.wav");
-                 CommandCenter::getInstance()->getFalcon()->setShield(Falcon::MAX_SHIELD);
-            }
-            else if (clazz.find("NewWallFloater") != std::string::npos ) {
-                //Sound::playSound(":/resources/sounds/insect.wav");
+    auto falcon = CommandCenter::getInstance()->getFalcon();
+    for (auto& movFloater : CommandCenter::getInstance()->getMovFloaters()) {
+        if ( getDistance(falcon->getCenter(), movFloater->getCenter()) < (falcon->getRadius() + movFloater->getRadius())) {
+            if (dynamic_cast<ShieldFloater*>(movFloater.get())) {
+                Sound::instance()->playSound("shieldup.wav");
+                falcon->setShield(Falcon::MAX_SHIELD);
+            } else if (dynamic_cast<NewWallFloater*>(movFloater.get())) {
+                Sound::instance()->playSound("insect.wav");
                 buildWall();
+            } else if (dynamic_cast<NukeFloater*>(movFloater.get())) {
+                Sound::instance()->playSound("nuke-up.wav");
+                falcon->setNukeMeter(Falcon::MAX_NUKE);
             }
-            else if (clazz.find("NukeFloater") != std::string::npos ) {
-                 //Sound::playSound(":/resources/sounds/nuke-up.wav");
-                 CommandCenter::getInstance()->getFalcon()->setNukeMeter(Falcon::MAX_NUKE);
-                   
-            }
-            
-            if(!CommandCenter::getInstance()->getOpsQueue()->isExist(movFloater))
-                CommandCenter::getInstance()->getOpsQueue()->enqueue(movFloater, GameOp::Action::REMOVE);
-
-
-        }//end if
-    }//end for
+            CommandCenter::getInstance()->getOpsQueue().enqueue(movFloater, GameOp::Action::REMOVE);
+        }
+    }
 
     processGameOpsQueue();
-
-}//end meth
-
-void Game::processGameOpsQueue() {
-    while (!CommandCenter::getInstance()->getOpsQueue()->empty()) {
-
-        CommandCenter* opsQueue = CommandCenter::getInstance();
-
-        GameOp* gameOp = CommandCenter::getInstance()->getOpsQueue()->dequeue();
-        Movable *mov = gameOp->getMovable();
-        GameOp::Action action = gameOp->getAction();
-
-        switch (mov->getTeam()) {
-            case Movable::FOE:
-            {
-                QVector<Movable*>& test = CommandCenter::getInstance()->getMovFoes();
-                if (action == GameOp::ADD) {
-                    CommandCenter::getInstance()->getMovFoes().push_back(mov);
-                }
-                else { //GameOp::REMOVE
-                    CommandCenter::getInstance()->getMovFoes().removeAll(mov);
-                    test = CommandCenter::getInstance()->getMovFoes();
-                    if (Asteroid* ast = dynamic_cast<Asteroid*>(mov)) {
-                        spawnSmallerAsteroidsOrDebris(ast);
-                    }
-                    delete mov;
-                }
-                break;
-            }
-            case Movable::FRIEND:
-                if (action == GameOp::ADD) {
-                    CommandCenter::getInstance()->getMovFriends().push_back(mov);
-                } else { //GameOp::Operation.REMOVE
-                    if (Falcon *fal = dynamic_cast<Falcon *>(mov)) {
-                        CommandCenter::getInstance()->initFalconAndDecrementFalconNum();
-                    } else {
-                        CommandCenter::getInstance()->getMovFriends().removeAll(mov);
-                        delete mov;
-                    }
-                }
-                break;
-
-            case Movable::FLOATER:
-                if (action == GameOp::ADD) {
-                    CommandCenter::getInstance()->getMovFloaters().push_back(mov);
-                } else { //GameOp::Operation.REMOVE
-                    CommandCenter::getInstance()->getMovFloaters().removeOne(mov);
-                    delete mov;
-                }
-                break;
-
-            case Movable::DEBRIS:
-                if (action == GameOp::ADD) {
-                    CommandCenter::getInstance()->getMovDebris().push_back(mov);
-                } else { //GameOp::Operation.REMOVE
-                    CommandCenter::getInstance()->getMovDebris().removeOne(mov);
-                    delete mov;
-                }
-                break;
-        }
-
-    }
-}
-
-void Game::buildWall()
-{
-    int BRICK_SIZE = Game::DIM.width() / 30, ROWS = 2, COLS = 20, X_OFFSET = BRICK_SIZE * 5, Y_OFFSET = 50;
-
-    for (int nCol = 0; nCol < COLS; nCol++) {
-        for (int nRow = 0; nRow < ROWS; nRow++) {
-            CommandCenter::getInstance()->getOpsQueue()->enqueue(
-                    new Brick(
-                            QPoint(nCol * BRICK_SIZE + X_OFFSET, nRow * BRICK_SIZE + Y_OFFSET),
-                            BRICK_SIZE),
-                    GameOp::ADD);
-
-        }
-    }
-}
-
-void Game::spawnNewWallFloater() {
-    if (CommandCenter::getInstance()->getFrame() % NewWallFloater::SPAWN_NEW_WALL_FLOATER == 0 && isBrickFree()) {
-        CommandCenter::getInstance()->getOpsQueue()->enqueue(new NewWallFloater(), GameOp::ADD);
-    }
-}
-
-
-void Game::spawnShieldFloater() {
-    if (CommandCenter::getInstance()->getFrame() % ShieldFloater::SPAWN_SHIELD_FLOATER == 0) {
-        CommandCenter::getInstance()->getOpsQueue()->enqueue(new ShieldFloater(), GameOp::ADD);
-    }
-}
-
-void Game::spawnNukeFloater() {
-    if (CommandCenter::getInstance()->getFrame() % NukeFloater::SPAWN_NUKE_FLOATER == 0) {
-        CommandCenter::getInstance()->getOpsQueue()->enqueue(new NukeFloater(), GameOp::ADD);
-    }
-}
-
-void Game::spawnBigAsteroids(int num) {
-    while (num-- > 0) {
-        //Asteroids with size of zero are big
-        CommandCenter::getInstance()->getOpsQueue()->enqueue(new Asteroid(0), GameOp::ADD);
-
-    }
-}
-
-
-void Game::spawnSmallerAsteroidsOrDebris(Asteroid *originalAsteroid) {
-
-    int size = originalAsteroid->getSize();
-    //small asteroids
-    if (size > 1) {
-        CommandCenter::getInstance()->getOpsQueue()->enqueue(new WhiteCloudDebris(originalAsteroid), GameOp::ADD);
-    }
-    //med and large
-    else {
-        //for large (0) and medium (1) sized Asteroids only, spawn 2 or 3 smaller asteroids respectively
-        //We can use the existing variable (size) to do this
-        size += 2;
-        while (size-- > 0) {
-            CommandCenter::getInstance()->getOpsQueue()->enqueue(new Asteroid(*originalAsteroid), GameOp::ADD);
-        }
-    }
-
-}
-
-bool Game::isBrickFree()
-{
-    //if there are no more Bricks on the screen
-    bool brickFree = true;
-    for (Movable* movFoe : CommandCenter::getInstance()->getMovFoes()) {
-        if (movFoe && dynamic_cast<Brick*>(movFoe)) {
-            brickFree = false;
-            break;
-        }
-    }
-    return brickFree;
-}
-
-bool Game::isLevelClear()
-{
-    //if there are no more Asteroids on the screen
-    bool asteroidFree = true;
-    for (Movable* movFoe : CommandCenter::getInstance()->getMovFoes()) {
-        if (movFoe && dynamic_cast<Asteroid*>(movFoe)) {
-            asteroidFree = false;
-            break;
-        }
-    }
-    return asteroidFree;
 }
 
 void Game::checkNewLevel()
 {
     if (isLevelClear()) {
-        //currentLevel will be zero at beginning of game
         int level = CommandCenter::getInstance()->getLevel();
-        //award some points for having cleared the previous level
-        CommandCenter::getInstance()->setScore(CommandCenter::getInstance()->getScore() + (10000L * level));
-        //bump the level up
-        level = level + 1;
+        CommandCenter::getInstance()->setScore(CommandCenter::getInstance()->getScore() + (10000 * level));
+        level++;
         CommandCenter::getInstance()->setLevel(level);
-        //spawn some big new asteroids
-        Falcon* falcon = CommandCenter::getInstance()->getFalcon();
+        auto falcon = CommandCenter::getInstance()->getFalcon();
         if (falcon) {
             spawnBigAsteroids(level);
             falcon->setShield(Falcon::INITIAL_SPAWN_TIME);
-            //show "Level X" in middle of screen
             falcon->setShowLevel(Falcon::INITIAL_SPAWN_TIME);
         }
     }
 }
 
-void Game::stopLoopingSounds(QSoundEffect* soundThrust, QSoundEffect* soundBackground)
+void Game::processGameOpsQueue()
 {
-//    if(soundThrust && soundThrust->isPlaying()) {
-//        soundThrust->stop();
-//    }
-//
-//    if(soundBackground && soundBackground->isPlaying()) {
-//        soundBackground->stop();
-//    }
-}
-
-void Game::keyPressEvent(QKeyEvent* event)
-{
-    Falcon* falcon = CommandCenter::getInstance()->getFalcon();
-
-    switch (event->key()) {
-    case START:
-        if (CommandCenter::getInstance()->isGameOver()) {
-            CommandCenter::getInstance()->initGame();
-            return;
+    CommandCenter* cm = CommandCenter::getInstance();
+    while (!cm->getOpsQueue().isEmpty()) {
+        GameOp gameOp = CommandCenter::getInstance()->getOpsQueue().dequeue();
+        std::shared_ptr<Movable> mov = gameOp.getMovable();
+        GameOp::Action action = gameOp.getAction();
+        Movable::Team team = mov->getTeam();
+        switch (team) {
+        case Movable::Team::FOE:
+            if ( action == GameOp::Action::ADD) {
+                CommandCenter::getInstance()->getMovFoes().push_back(mov);
+            } else {
+                CommandCenter::getInstance()->getMovFoes().remove(mov);
+            }
+            break;
+        case Movable::Team::FRIEND:
+            if ( action == GameOp::Action::ADD) {
+                CommandCenter::getInstance()->getMovFriends().push_back(mov);
+            } else {
+                CommandCenter::getInstance()->getMovFriends().remove(mov);
+            }
+            break;
+        case Movable::Team::FLOATER:
+            if ( action == GameOp::Action::ADD) {
+                CommandCenter::getInstance()->getMovFloaters().push_back(mov);
+            } else {
+                CommandCenter::getInstance()->getMovFloaters().remove(mov);
+            }
+            break;
+        case Movable::Team::DEBRIS:
+            if ( action == GameOp::Action::ADD) {
+                CommandCenter::getInstance()->getMovDebris().push_back(mov);
+            } else {
+                CommandCenter::getInstance()->getMovDebris().remove(mov);
+            }
+            break;
         }
-        break;
-
-    case PAUSE:
-        CommandCenter::getInstance()->setPaused(!CommandCenter::getInstance()->getPaused());
-//        if (CommandCenter::getInstance()->getPaused()) {
-//            stopLoopingSounds(soundThrust, soundBackground);
-//        }
-        break;
-
-    case QUIT:
-        QCoreApplication::quit();
-        break;
-
-    case UP:
-        if (falcon) {
-            falcon->setThrusting(true);
-          //  soundThrust->play();
-        }
-        break;
-
-    case LEFT:
-        if (falcon) {
-            falcon->setTurnState(Falcon::LEFT);
-        }
-        break;
-
-    case RIGHT:
-        if (falcon) {
-            falcon->setTurnState(Falcon::RIGHT);
-        }
-        break;
-
-    default:
-        break;
     }
-
-    event->accept();
 }
 
-void Game::keyReleaseEvent(QKeyEvent* event)
+void Game::buildWall()
 {
-    Falcon* falcon = CommandCenter::getInstance()->getFalcon();
-
-    switch (event->key()) {
-    case FIRE:
-        if (falcon) {
-            CommandCenter::getInstance()->getOpsQueue()->enqueue(new Bullet(falcon), GameOp::Action::ADD);
-          //  QSoundEffect::play("thump.wav");
+    const int BRICK_SIZE = 1100 / 30, ROWS = 2, COLS = 20, X_OFFSET = BRICK_SIZE * 5, Y_OFFSET = 50;
+    for (int nCol = 0; nCol < COLS; nCol++) {
+        for (int nRow = 0; nRow < ROWS; nRow++) {
+            CommandCenter::getInstance()->getOpsQueue().enqueue(
+                std::make_shared<Brick>(sf::Vector2f(nCol * BRICK_SIZE + X_OFFSET, nRow * BRICK_SIZE + Y_OFFSET), BRICK_SIZE),
+                GameOp::Action::ADD
+                );
         }
-        break;
-
-    case LEFT:
-    case RIGHT:
-        if (falcon) {
-            falcon->setTurnState(Falcon::IDLE);
-        }
-        break;
-
-    case UP:
-        if (falcon) {
-            falcon->setThrusting(false);
-          //  soundThrust->stop();
-        }
-        break;
-
-    case NUKE:
-        if (falcon && falcon->getNukeMeter() > 0) {
-            CommandCenter::getInstance()->getOpsQueue()->enqueue(new Nuke(falcon), GameOp::Action::ADD);
-          //  QSoundEffect::play("nuke.wav");
-            falcon->setNukeMeter(0);
-        }
-        break;
-
-    case MUTE:
-        CommandCenter::getInstance()->setMuted(!CommandCenter::getInstance()->getMuted());
-        if (!CommandCenter::getInstance()->getMuted())
-        {
-          //  stopLoopingSounds(soundBackground, nullptr);
-        }
-        else
-        {
-           // soundBackground->play();
-        }
-        break;
-
-    default:
-        break;
     }
-
-    event->accept();
 }
 
+void Game::spawnNewWallFloater()
+{
+    if (CommandCenter::getInstance()->getFrame() % NewWallFloater::SPAWN_NEW_WALL_FLOATER() == 0 && isBrickFree()) {
+        CommandCenter::getInstance()->getOpsQueue().enqueue(std::make_shared<NewWallFloater>(), GameOp::Action::ADD);
+    }
+}
 
+void Game::spawnShieldFloater()
+{
+    if (CommandCenter::getInstance()->getFrame() % ShieldFloater::SPAWN_SHIELD_FLOATER() == 0) {
+        CommandCenter::getInstance()->getOpsQueue().enqueue(std::make_shared<ShieldFloater>(), GameOp::Action::ADD);
+    }
+}
+
+void Game::spawnNukeFloater()
+{
+    if (CommandCenter::getInstance()->getFrame() % NukeFloater::SPAWN_NUKE_FLOATER == 0) {
+        CommandCenter::getInstance()->getOpsQueue().enqueue(std::make_shared<NukeFloater>(), GameOp::Action::ADD);
+    }
+}
+
+void Game::spawnBigAsteroids(int num)
+{
+    while (num-- > 0) {
+        std::shared_ptr<Asteroid> ast = std::make_shared<Asteroid>(0);
+        CommandCenter::getInstance()->getOpsQueue().enqueue(ast, GameOp::Action::ADD);
+    }
+}
+
+bool Game::isBrickFree()
+{
+    CommandCenter* cm = CommandCenter::getInstance();
+    for (auto& movFoe : cm->getMovFoes()) {
+        if (dynamic_cast<Brick*>(movFoe.get())) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Game::isLevelClear()
+{
+    CommandCenter* cm = CommandCenter::getInstance();
+    for (auto& movFoe : cm->getMovFoes()) {
+        if (dynamic_cast<Asteroid*>(movFoe.get())) {
+            return false;
+        }
+    }
+    return true;
+}

@@ -1,22 +1,16 @@
 #ifndef WHITECLOUDDEBRIS_H
 #define WHITECLOUDDEBRIS_H
 
-#include <QObject>
-#include <QPoint>
-#include <QPainter>
-
 #include "Sprite.h"
+#include <SFML/Graphics.hpp>
+#include <map>
+#include <memory>
 
 class WhiteCloudDebris : public Sprite {
-    Q_OBJECT
-
 public:
-    WhiteCloudDebris(Sprite* explodingSprite);
-
-    void draw(QPainter& painter) override;
-
-private:
-    QMap<int, QImage> rasterMap;
+    // Constructor
+    WhiteCloudDebris(const Sprite& explodingSprite);
+    void draw(sf::RenderWindow& window) override;
 };
 
-#endif // WHITECLOUDDEBRIS_H
+#endif

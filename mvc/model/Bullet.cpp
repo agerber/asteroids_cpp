@@ -1,55 +1,48 @@
-#include <QColor>
-#include <QVector>
-#include <cmath>
-
 #include "Bullet.h"
-#include "Falcon.h"
-#include "Utils.h"
+#include "utils.h"
 
-Bullet::Bullet(Falcon* falcon):
-    Sprite()
+Bullet::Bullet(const Falcon &falcon)
 {
-    //Movable::FRIEND, QColor(Qt::GlobalColor::yellow)
-    setTeam(Movable::FRIEND);
-    setColor(Qt::GlobalColor::yellow); //to change Origin
-    //a bullet expires after 20 frames.
+    // Set as a friendly unit
+    setTeam(Team::FRIEND);
+    setColor(sf::Color(255,215,0));
+
+    // Bullet expires after 20 frames
     setExpiry(20);
     setRadius(6);
 
-    //everything is relative to the falcon ship that fired the bullet
-    setCenter(falcon->getCenter());
+    // Position is relative to the Falcon's position
+    setCenter(falcon.getCenter());
 
-    //set the bullet orientation to the falcon (ship) orientation
-    setOrientation(falcon->getOrientation());
+    // Set bullet orientation to Falcon's orientation
+    setOrientation(falcon.getOrientation());
 
     const double FIRE_POWER = 35.0;
-    double vectorX =
-            std::cos(Utils::my_qDegreesToRadians(getOrientation())) * FIRE_POWER;
-    double vectorY =
-            std::sin(Utils::my_qDegreesToRadians(getOrientation())) * FIRE_POWER;
+    double vectorX = std::cos( Utils::my_qDegreesToRadians(getOrientation() ) ) * FIRE_POWER;
+    double vectorY = std::sin( Utils::my_qDegreesToRadians(getOrientation() ) ) * FIRE_POWER;
 
-    //fire force: falcon inertia + fire-vector
-    setDeltaX(falcon->getDeltaX() + vectorX);
-    setDeltaY(falcon->getDeltaY() + vectorY);
+    // Fire force: Falcon inertia + fire-vector
+    setDeltaX(falcon.getDeltaX() + vectorX);
+    setDeltaY(falcon.getDeltaY() + vectorY);
 
-    //we have a reference to the falcon passed into the constructor. Let's create some kick-back.
-    //fire kick-back on the falcon: inertia - fire-vector / some arbitrary divisor
+    // Apply kick-back to the Falcon
     const double KICK_BACK_DIVISOR = 36.0;
-    falcon->setDeltaX(falcon->getDeltaX() - vectorX / KICK_BACK_DIVISOR);
-    falcon->setDeltaY(falcon->getDeltaY() - vectorY / KICK_BACK_DIVISOR);
+    Falcon& mutableFalcon = const_cast<Falcon&>(falcon);
+    mutableFalcon.setDeltaX(falcon.getDeltaX() - vectorX / KICK_BACK_DIVISOR);
+    mutableFalcon.setDeltaY(falcon.getDeltaY() - vectorY / KICK_BACK_DIVISOR);
 
-    //define the points on a cartesian grid
-    QVector<QPoint> listPoints = QVector<QPoint>{
-        QPoint(0, 3), //top point
-        QPoint(1, -1), //right bottom
-        QPoint(0, 0),
-        QPoint(-1, -1) //left bottom
+    // Define the points on a cartesian grid
+    std::vector<sf::Vector2f> listPoints = {
+        sf::Vector2f(0, 3),   // Top point
+        sf::Vector2f(1, -1),  // Right bottom
+        sf::Vector2f(0, 0),   // Center
+        sf::Vector2f(-1, -1)  // Left bottom
     };
 
     setCartesians(listPoints);
 }
 
-void Bullet::draw(QPainter& painter)
+void Bullet::draw(sf::RenderWindow &window)
 {
-    renderVector(painter);
+    renderVector(window);
 }

@@ -1,41 +1,28 @@
-# Asteroids - CPP
+## Installation and Build Instructions
 
-## Build notes
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/agerber/asteroids_cpp.git
+    cd asteroids_cpp
+    ```
 
-### Dependencies
-Qt > 6.x
+2. Make build scripts executable:
+    ```bash
+    chmod +x build.sh
+    chmod +x build_mac.sh  # for mac
+    chmod +x build_linux.sh  # for linux
+    ```
 
-[C++ Streams](https://github.com/jscheiny/Streams)
-
-### Instructions
-
-Please run this command first in project root to fetch dependencies:
-
-```git submodule update --init```
-
-### Windows
-Use MinGW-based Qt and compiler toolchain to compile this project.
-
-you have to make sure that cmake, mingw32-make and Qt binaries are in your
-environment PATH like (```C:\msys64\mingw64\bin```)
-
-then use these commands to build the project:
-
-```
-mkdir build
-cd build
-cmake .. -G "MinGW Makefiles"
-mingw32-make
-```
-
-you can also use any cmake-based IDE like CLion to build the project
-
-### MacOS
-must run git submodule update --init --recursive
-
-Install minimum Qt 6.6.0 to build for m1 silicon mac chip.
-
-my current location of Qt is /Users/macbook/Qt
-
-## Todo
-Must implement streams + lambdas
+3. Run the build script:
+    - **macOS:**
+      ```bash
+      ./build_mac.sh
+      ```
+    - **Linux:**
+      ```bash
+      ./build_linux.sh
+      ```
+4. Execute the executable:
+   ```bash
+      build/asteroid
+   ```

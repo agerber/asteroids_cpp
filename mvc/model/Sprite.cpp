@@ -1,292 +1,138 @@
 #include "Sprite.h"
-#include "CommandCenter.h"
 #include "Game.h"
-#include "Utils.h"
-#include "Stream.h"
+#include <memory>
 
-#include <QPainter>
-#include <QTransform>
-#include <QRandomGenerator>
-#include <QThread>
-#include <QDebug>
-#include <QtMath>
-
-using namespace stream;
-using namespace stream::op;
-
-Sprite::Sprite(QObject *parent) : Movable(parent)
+Sprite::Sprite()
 {
-    spin = 0;
-    deltaX = deltaY = 0;
-    //team = Movable::FRIEND;
-    radius = 0;
-    orientation = 0;
-    expiry = 0;
-    //place the sprite at some random location in the game-space at instantiation
-    setCenter(QPoint(rand() % Game::DIM.width(),
-                      rand() % Game::DIM.height()));
-}
-
-void Sprite::setCenter(QPoint center)
-{
-    this->center = center;
-}
-
-QPoint Sprite::getCenter()
-{
-    return center;
-}
-
-void Sprite::setDeltaX(double deltaX)
-{
-    this->deltaX = deltaX;
-}
-
-double Sprite::getDeltaX() const
-{
-    return deltaX;
-}
-
-void Sprite::setDeltaY(double deltaY)
-{
-    this->deltaY = deltaY;
-}
-
-double Sprite::getDeltaY() const
-{
-    return deltaY;
-}
-
-void Sprite::setTeam(Movable::Team team_in)
-{
-    team = team_in;
-}
-
-Movable::Team Sprite::getTeam()
-{
-    return team;
-}
-
-void Sprite::setRadius(int radius)
-{
-    this->radius = radius;
-}
-
-int Sprite::getRadius()
-{
-    return radius;
-}
-
-void Sprite::setOrientation(int orientation)
-{
-    this->orientation = orientation;
-}
-
-int Sprite::getOrientation()
-{
-    return orientation;
-}
-
-void Sprite::setExpiry(int expiry)
-{
-    this->expiry = expiry;
-}
-
-int Sprite::getExpiry() const
-{
-    return expiry;
-}
-
-void Sprite::setSpin(int spin)
-{
-    this->spin = spin;
-}
-
-int Sprite::getSpin() const
-{
-    return spin;
-}
-
-void Sprite::setCartesians(QVector<QPoint> points)
-{
-    cartesians = points;
-}
-
-QVector<QPoint> Sprite::getCartesians() 
-{
-    return cartesians;
-}
-
-void Sprite::setColor(QColor color)
-{
-    this->color = color;
-}
-
-QColor Sprite::getColor() 
-{
-    return color;
-}
-
-void Sprite::setRasterMap(QMap<int, QImage>& map)
-{
-    rasterMap = map;
-}
-
-QMap<int, QImage>& Sprite::getRasterMap() 
-{
-    return rasterMap;
+    center = sf::Vector2f(Game::nextInt(Game::DIM.x),
+                          Game::nextInt(Game::DIM.y));
 }
 
 void Sprite::move()
 {
-    //The following code block just keeps the sprite inside the bounds of the frame.
-    //To ensure this behavior among all sprites in your game, make sure to call super.move() in extending classes
-    // where you need to override the move() method.
-
-    //right-bounds reached
-    if (center.x() > Game::DIM.width()) {
-        setCenter(QPoint(1, center.y()));
-    //left-bounds reached
-    } else if (center.x() < 0) {
-        setCenter(QPoint(Game::DIM.width() - 1, center.y()));
-    //bottom-bounds reached
-    } else if (center.y() > Game::DIM.height()) {
-        setCenter(QPoint(center.x(), 1));
-    //top-bounds reached
-    } else if (center.y() < 0) {
-        setCenter(QPoint(center.x(), Game::DIM.height() - 1));
-    //in-bounds
+    // Right-bounds reached
+    if (center.x > Game::DIM.x) {
+        center.x = 1;
+    } else if (center.x < 0) { // Left-bounds reached
+        center.x = Game::DIM.x - 1;
+    } else if (center.y > Game::DIM.y) { // Bottom-bounds reached
+        center.y = 1;
+    } else if (center.y < 0) { // Top-bounds reached
+        center.y = Game::DIM.y - 1;
     } else {
-        double newXPos = center.x() + getDeltaX();
-        double newYPos = center.y() + getDeltaY();
-        setCenter(QPoint((int) newXPos, (int) newYPos));
+        center.x += deltaX;
+        center.y += deltaY;
     }
 
-    //expire (decrement expiry) on short-lived objects only
-    //the default value of expiry is zero, so this block will only apply to expiring sprites
+    // Expire on short-lived objects only
     if (expiry > 0) expire();
 
-    //if a sprite spins, adjust its orientation
-    //the default value of spin is zero, therefore non-spinning objects will not call this block.
-    if (spin != 0) {
-        setOrientation(getOrientation() + spin);
-    }
-}
-
-bool Sprite::isProtected()
-{
-    //by default, sprites are not protected
-    return false;
-}
-
-QImage Sprite::loadGraphic(QString imagePath)
-{
-    QImage image(imagePath);
-    if (image.isNull()) {
-        qDebug() << "Error: couldn't load image at" << imagePath;
-    }
-    return image;
-}
-//overloaded
-void Sprite::renderRaster(QPainter &painter, QImage image)
-{
-    int diam = getRadius() * 2;
-    renderRaster(painter, image, diam);
-}
-
-//overloaded
-void Sprite::renderRaster(QPainter &painter, QImage image, int diam)
-{
-    if (image.isNull()) return;
-
-    int centerX = getCenter().x();
-    int centerY = getCenter().y();
-    int width = diam;
-    int height = diam;
-    double angleRadians = Utils::my_qDegreesToRadians(getOrientation());
-
-    QTransform oldTransform = painter.worldTransform();
-    QTransform transform(oldTransform);
-    if (centerX != 0 || centerY != 0 ) {
-        transform.translate(centerX, centerY);
-    }
-    double scaleX = width * 1.0 / image.width();
-    double scaleY = height * 1.0 / image.height();
-    transform.scale(scaleX, scaleY);
-    if (angleRadians != 0) {
-        transform.rotateRadians(angleRadians);
-    }
-    transform.translate(-image.width() / 2.0, -image.height() / 2.0);
-
-    painter.setWorldTransform(transform);
-    painter.drawImage(0, 0, image);
-    painter.setWorldTransform(oldTransform);
-}
-
-void Sprite::renderVector(QPainter &painter)
-{
-    QPen pen;
-    pen.setColor(color);
-    painter.setPen(pen);
-
-    // To render this Sprite in vector mode, we need to:
-    // 1: convert raw cartesians to raw polars,
-    // 2: rotate polars for orientation of sprite.
-    // 3: Convert back to cartesians
-    // 4: adjust for center-point (location).
-    // and 5: pass the cartesian-x and cartesian-y coords as arrays along with length to painter.drawPolygon().
-
-    // 1: convert raw cartesians to raw polars (used later in stream below)
-    // The reason we convert cartesian-points to polar-points is that it's much easier to rotate polar-points
-    QVector<PolarPoint> polars = Utils::cartesianToPolar(getCartesians());
-
-
-    // 2: rotate raw polars given the orientation of the sprite.
-    auto rotatePolarByOrientation = [&](const PolarPoint& pp) -> PolarPoint
-    {
-        return {pp.r, pp.theta + Utils::my_qDegreesToRadians(-orientation - 90)}; //rotated Theta
-    };
-
-    // 3: convert the rotated polars back to cartesians
-    auto polarToCartesian = [&](const PolarPoint& pp) -> QPointF
-    {
-        return QPointF(pp.r * radius * cos(pp.theta), pp.r * radius * sin(pp.theta));
-    };
-
-    // 4: adjust the cartesians for the location (center-point) of the sprite.
-    // the reason we subtract the y-value has to do with how Qt plots the vertical axis for
-    // graphics (from top to bottom)
-    auto adjustForLocation = [&](const QPointF& p) -> QPointF
-    {
-        return QPointF(center.x() + p.x(), center.y() - p.y());
-    };
-
-    // 5: draw the polygon using the List of raw polars from above, applying mapping transforms as required
-    std::vector<QPointF> points = MakeStream::from(polars)
-    | map_(rotatePolarByOrientation)
-    | map_(polarToCartesian)
-    | map_(adjustForLocation)
-    | to_vector();
-
-    painter.drawPolygon(points.data(), points.size());
-
+    // Adjust orientation for spinning objects
+    if (spin != 0) orientation += spin;
 }
 
 int Sprite::somePosNegValue(int seed)
 {
-     int randomNumber = QRandomGenerator::global()->bounded(seed);
+    int randomNumber = Game::nextInt(seed);
     return (randomNumber % 2 == 0) ? randomNumber : -randomNumber;
+}
 
+void Sprite::renderVector(sf::RenderWindow &window)
+{
+    sf::ConvexShape polygon;
+    polygon.setPointCount(cartesians.size());
+
+    // 1: Convert raw cartesians to raw polars
+    std::vector<PolarPoint> polars = Utils::cartesianToPolar(cartesians);
+
+    // 2: Rotate raw polars given the orientation of the sprite
+    auto rotatePolarByOrientation = [&](const PolarPoint& pp) -> PolarPoint
+    {
+        float adjustedTheta = pp.getTheta() + Utils::my_qDegreesToRadians(-orientation - 90); // Rotated theta
+        return PolarPoint(pp.getR(), adjustedTheta);
+    };
+
+    // 3: Convert the rotated polars back to cartesians (apply radius scaling correctly)
+    auto polarToCartesian = [&](const PolarPoint& pp) -> sf::Vector2f
+    {
+        // Adjust the scaling to match the original proportions
+        float x = pp.getR() * std::cos(pp.getTheta());
+        float y = pp.getR() * std::sin(pp.getTheta());
+        return sf::Vector2f(x, y);
+    };
+
+    // 4: Adjust for the sprite's location (center point)
+    auto adjustForLocation = [&](const sf::Vector2f& p) -> sf::Vector2f
+    {
+        return sf::Vector2f(center.x + (p.x * radius), center.y - (p.y * radius));
+    };
+
+    // 5: Apply the transformations and set the points on the polygon
+    std::vector<sf::Vector2f> points;
+    for (const auto& pp : polars) {
+        PolarPoint rotated = rotatePolarByOrientation(pp);
+        sf::Vector2f cartesian = polarToCartesian(rotated);
+        sf::Vector2f finalPosition = adjustForLocation(cartesian);
+        points.push_back(finalPosition);
+    }
+
+    for (size_t i = 0; i < points.size(); ++i) {
+        polygon.setPoint(i, points[i]);
+    }
+
+    // Set the fill color
+    polygon.setFillColor(sf::Color::Transparent);
+    polygon.setOutlineColor(color);
+    polygon.setOutlineThickness(1.0f);
+
+    // Draw the polygon
+    window.draw(polygon);
+}
+
+std::shared_ptr<sf::Texture> Sprite::loadGraphic(const std::string &imagePath)
+{
+    auto texture = std::make_shared<sf::Texture>();
+    if (!texture->loadFromFile(imagePath)) {
+        std::cerr << "Error loading image: " << imagePath << std::endl;
+        return nullptr;
+    }
+    return texture;
+}
+
+void Sprite::renderRaster(sf::RenderWindow &window, const std::shared_ptr<sf::Texture> &texture)
+{
+    int diam = getRadius() * 2;
+    renderRaster(window, texture, diam);
+}
+
+void Sprite::renderRaster(sf::RenderWindow &window, const std::shared_ptr<sf::Texture> &texture, int diam)
+{
+    if (!texture || texture->getSize().x == 0 || texture->getSize().y == 0) return;
+
+    sf::Sprite sprite;
+    sprite.setTexture(*texture);
+
+    // Calculate scale based on desired diameter
+    float scaleX = static_cast<float>(diam) / texture->getSize().x;
+    float scaleY = static_cast<float>(diam) / texture->getSize().y;
+    sprite.setScale(scaleX, scaleY);
+
+    // Set the sprite's origin to the center of the image (for correct rotation and translation)
+    sprite.setOrigin(texture->getSize().x / 2.0f, texture->getSize().y / 2.0f);
+
+    // Set position to the center point
+    sprite.setPosition(center);
+
+    sprite.setRotation(orientation);
+
+    // Draw the sprite
+    window.draw(sprite);
 }
 
 void Sprite::expire()
 {
     if (expiry == 1) {
-        CommandCenter::getInstance()->getOpsQueue()->enqueue(this, GameOp::REMOVE);
+        CommandCenter::getInstance()->getOpsQueue().enqueue(shared_from_this(), GameOp::Action::REMOVE);
     }
-    //and then decrements in all cases
     expiry--;
 }
-
-
-  

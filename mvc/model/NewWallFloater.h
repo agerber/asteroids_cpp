@@ -3,18 +3,20 @@
 
 #include "Floater.h"
 #include "Game.h"
-#include <QColor>
+#include <SFML/Graphics.hpp>
 
-class NewWallFloater : public Floater
-{
+class NewWallFloater : public Floater {
 public:
-    //spawn every 40 seconds
-    NewWallFloater();
-    ~NewWallFloater() {}
-    static  int SPAWN_NEW_WALL_FLOATER; 
+    // Constants
+    static int SPAWN_NEW_WALL_FLOATER();
 
-private:
-    QColor MAROON{ 186, 0, 22 };
+    // Constructor
+    NewWallFloater() {
+        // Set color to maroon
+        setColor(sf::Color(186, 0, 22));
+        // Set expiry time
+        setExpiry(230);
+    }
 };
 
-#endif // NEWWALLFLOATER_H
+#endif

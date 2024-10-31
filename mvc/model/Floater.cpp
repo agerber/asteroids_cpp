@@ -1,31 +1,37 @@
 #include "Floater.h"
-#include "CommandCenter.h"
-#include "utils.h"
 
-#include <QPoint>
 
-Floater::Floater() : Sprite() {
+Floater::Floater()
+{
+    // Set the team to FLOATER
     setTeam(Team::FLOATER);
 
+    // Default values, which can be overridden in the concrete classes
     setExpiry(250);
-    setColor(Qt::white);
+    setColor(sf::Color::White);
     setRadius(50);
+
+    // Set random DeltaX, DeltaY, and spin
     setDeltaX(somePosNegValue(10));
     setDeltaY(somePosNegValue(10));
     setSpin(somePosNegValue(10));
 
-    QVector<QPoint> points;
-    points << QPoint(5, 5)
-           << QPoint(4, 0)
-           << QPoint(5, -5)
-           << QPoint(0, -4)
-           << QPoint(-5, -5)
-           << QPoint(-4, 0)
-           << QPoint(-5, 5)
-           << QPoint(0, 4);
-    setCartesians(points);
+    // Cartesian points defining the shape of the polygon
+    std::vector<sf::Vector2f> listPoints = {
+        sf::Vector2f(5, 5),
+        sf::Vector2f(4, 0),
+        sf::Vector2f(5, -5),
+        sf::Vector2f(0, -4),
+        sf::Vector2f(-5, -5),
+        sf::Vector2f(-4, 0),
+        sf::Vector2f(-5, 5),
+        sf::Vector2f(0, 4)
+    };
+
+    setCartesians(listPoints);
 }
 
-void Floater::draw(QPainter &painter) {
-    renderVector(painter);
+void Floater::draw(sf::RenderWindow &window)
+{
+    renderVector(window);
 }
