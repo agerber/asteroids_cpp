@@ -10,12 +10,10 @@
 #include "Sound.h"
 #include "GamePanel.h"
 #include "Movable.h"
-#include "Brick.h"
 
 #include "Falcon.h"
 #include "GameOp.h"
 #include "ShieldFloater.h"
-#include "NewWallFloater.h"
 #include "WhiteCloudDebris.h"
 #include "GamePanel.h"
 #include "NukeFloater.h"
@@ -26,7 +24,7 @@ class Game {
 public:
     Game() :
         window(sf::VideoMode(1100, 900), "Asteroid"),
-        gamePanel(window),
+        gamePanel(window, this),
         isRunning(true),
         animationThread(&Game::runAnimations, this),
         gameStarted(false)
@@ -52,6 +50,8 @@ public:
     void runAnimations();
 
     static const sf::Vector2u DIM;
+    sf::View miniMapView() const { return miniMapView_; }
+    sf::RectangleShape miniMapBackground() const { return miniMapBackground_; }
 
 private:
     static const int ANIMATION_DELAY = 40;
@@ -62,6 +62,10 @@ private:
     sf::Thread animationThread;
     bool isRunning;
     bool gameStarted;
+    sf::View miniMapView_;
+    sf::RectangleShape miniMapBackground_;
+
+    void setupMiniMap();
 
     float getDistance(const sf::Vector2<float> vec1, const sf::Vector2<float> vec2)
     {
@@ -77,11 +81,7 @@ private:
 
     void checkNewLevel();
 
-    void checkFloaters() {
-        spawnNewWallFloater();
-        spawnShieldFloater();
-        spawnNukeFloater();
-    }
+    void checkFloaters();
 
     void processGameOpsQueue();
 

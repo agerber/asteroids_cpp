@@ -15,6 +15,8 @@ const int Game::FRAMES_PER_SECOND()
 
 void Game::run()
 {
+    setupMiniMap();
+
     while (isRunning && window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -44,12 +46,27 @@ void Game::runAnimations()
     while (isRunning && window.isOpen()) {
         checkCollisions();
         checkNewLevel();
-        checkFloaters();
         CommandCenter::getInstance()->incrementFrame();
         // Control frame rate
         sf::sleep(sf::milliseconds(ANIMATION_DELAY));
     }
 }
+
+void Game::setupMiniMap()
+{
+    sf::FloatRect worldBounds(0, 0, DIM.x, DIM.y);  // Bind to actual world bounds
+    miniMapView_.setSize(worldBounds.width, worldBounds.height);
+    miniMapView_.setCenter(worldBounds.width / 2, worldBounds.height / 2);
+
+    //put minimap on bottom left
+    miniMapView_.setViewport(sf::FloatRect(0.02f, 0.78f, 0.2f, 0.2f));
+
+    // Set up the black background for the mini-map
+    miniMapBackground_.setSize(sf::Vector2f(220.0f, 180.0f)); //
+    miniMapBackground_.setFillColor(sf::Color::Black);
+    miniMapBackground_.setPosition(20.0f, Game::DIM.y - miniMapBackground_.getSize().y - 20.0f); //margin
+}
+
 
 void Game::handlekeyPressed(const sf::Event &event)
 {
@@ -135,7 +152,7 @@ void Game::handlekeyRelease(const sf::Event &event)
         if (falcon->getNukeMeter() > 0 ) {
             std::shared_ptr<Nuke> nuke = std::make_shared<Nuke>(*falcon);
             cm->getOpsQueue().enqueue(nuke, GameOp::Action::ADD);
-            Sound::getInstance().playSound("nuke.wav");
+            Sound::instance()->playSound(SOUND_NUKE);
             falcon->setNukeMeter(0);
         }
     }
@@ -165,13 +182,8 @@ void Game::checkCollisions()
                 }
                 CommandCenter::getInstance()->getOpsQueue().enqueue(movFoe, GameOp::Action::REMOVE);
 
-                if (dynamic_cast<Brick*>(movFoe.get())) {
-                    CommandCenter::getInstance()->setScore(CommandCenter::getInstance()->getScore() + 1000);
-                    Sound::instance()->playSound("rock.wav");
-                } else {
-                    CommandCenter::getInstance()->setScore(CommandCenter::getInstance()->getScore() + 10);
-                    Sound::instance()->playSound("kapow.wav");
-                }
+                CommandCenter::getInstance()->setScore(CommandCenter::getInstance()->getScore() + 10);
+                Sound::instance()->playSound(SOUND_KAPOW);
             }
         }
     }
@@ -180,13 +192,10 @@ void Game::checkCollisions()
     for (auto& movFloater : CommandCenter::getInstance()->getMovFloaters()) {
         if ( getDistance(falcon->getCenter(), movFloater->getCenter()) < (falcon->getRadius() + movFloater->getRadius())) {
             if (dynamic_cast<ShieldFloater*>(movFloater.get())) {
-                Sound::instance()->playSound("shieldup.wav");
+                Sound::instance()->playSound(SOUND_SHIELD_UP);
                 falcon->setShield(Falcon::MAX_SHIELD);
-            } else if (dynamic_cast<NewWallFloater*>(movFloater.get())) {
-                Sound::instance()->playSound("insect.wav");
-                buildWall();
             } else if (dynamic_cast<NukeFloater*>(movFloater.get())) {
-                Sound::instance()->playSound("nuke-up.wav");
+                Sound::instance()->playSound(SOUND_NUKE_UP);
                 falcon->setNukeMeter(Falcon::MAX_NUKE);
             }
             CommandCenter::getInstance()->getOpsQueue().enqueue(movFloater, GameOp::Action::REMOVE);
@@ -210,6 +219,12 @@ void Game::checkNewLevel()
             falcon->setShowLevel(Falcon::INITIAL_SPAWN_TIME);
         }
     }
+}
+
+void Game::checkFloaters()
+{
+    spawnShieldFloater();
+    spawnNukeFloater();
 }
 
 void Game::processGameOpsQueue()
@@ -237,7 +252,11 @@ void Game::processGameOpsQueue()
             if ( action == GameOp::Action::ADD) {
                 CommandCenter::getInstance()->getMovFriends().push_back(mov);
             } else {
-                CommandCenter::getInstance()->getMovFriends().remove(mov);
+                if (auto fal = std::dynamic_pointer_cast<Falcon>(mov)) {
+                    cm->initFalconAndDecrementFalconNum();
+                } else {
+                    CommandCenter::getInstance()->getMovFriends().remove(mov);
+                }
             }
             break;
         case Movable::Team::FLOATER:
@@ -258,25 +277,6 @@ void Game::processGameOpsQueue()
     }
 }
 
-void Game::buildWall()
-{
-    const int BRICK_SIZE = 1100 / 30, ROWS = 2, COLS = 20, X_OFFSET = BRICK_SIZE * 5, Y_OFFSET = 50;
-    for (int nCol = 0; nCol < COLS; nCol++) {
-        for (int nRow = 0; nRow < ROWS; nRow++) {
-            CommandCenter::getInstance()->getOpsQueue().enqueue(
-                std::make_shared<Brick>(sf::Vector2f(nCol * BRICK_SIZE + X_OFFSET, nRow * BRICK_SIZE + Y_OFFSET), BRICK_SIZE),
-                GameOp::Action::ADD
-                );
-        }
-    }
-}
-
-void Game::spawnNewWallFloater()
-{
-    if (CommandCenter::getInstance()->getFrame() % NewWallFloater::SPAWN_NEW_WALL_FLOATER() == 0 && isBrickFree()) {
-        CommandCenter::getInstance()->getOpsQueue().enqueue(std::make_shared<NewWallFloater>(), GameOp::Action::ADD);
-    }
-}
 
 void Game::spawnShieldFloater()
 {
@@ -321,16 +321,6 @@ void Game::spawnBigAsteroids(int num)
     }
 }
 
-bool Game::isBrickFree()
-{
-    CommandCenter* cm = CommandCenter::getInstance();
-    for (auto& movFoe : cm->getMovFoes()) {
-        if (dynamic_cast<Brick*>(movFoe.get())) {
-            return false;
-        }
-    }
-    return true;
-}
 
 bool Game::isLevelClear()
 {

@@ -1,5 +1,5 @@
 #include "whiteclouddebris.h"
-
+#include "assetsloader.h"
 
 WhiteCloudDebris::WhiteCloudDebris(Sprite *explodingSprite)
 {
@@ -8,15 +8,15 @@ WhiteCloudDebris::WhiteCloudDebris(Sprite *explodingSprite)
 
     // Load graphics into the raster map
     std::map<int, std::shared_ptr<sf::Texture>> rasterMap;
-    rasterMap[0] = loadGraphic("resources/imgs/exp/row-1-column-1.png");
-    rasterMap[1] = loadGraphic("resources/imgs/exp/row-1-column-2.png");
-    rasterMap[2] = loadGraphic("resources/imgs/exp/row-1-column-3.png");
-    rasterMap[3] = loadGraphic("resources/imgs/exp/row-2-column-1.png");
-    rasterMap[4] = loadGraphic("resources/imgs/exp/row-2-column-2.png");
-    rasterMap[5] = loadGraphic("resources/imgs/exp/row-2-column-3.png");
-    rasterMap[6] = loadGraphic("resources/imgs/exp/row-3-column-1.png");
-    rasterMap[7] = loadGraphic("resources/imgs/exp/row-3-column-2.png");
-    rasterMap[8] = loadGraphic("resources/imgs/exp/row-3-column-3.png");
+    rasterMap[0] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R1_C1);
+    rasterMap[1] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R1_C2);
+    rasterMap[2] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R1_C3);
+    rasterMap[3] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R2_C1);
+    rasterMap[4] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R2_C2);
+    rasterMap[5] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R2_C3);
+    rasterMap[6] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R3_C1);
+    rasterMap[7] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R3_C2);
+    rasterMap[8] = AssetsLoader::instance()->getImage(TEXTURE_EXP_R3_C3);
 
     setRasterMap(rasterMap);
 

@@ -1,6 +1,16 @@
 
 #include "GamePanel.h"
 #include "Game.h"
+#include "assetsloader.h"
+#include "Asteroid.h"
+
+GamePanel::GamePanel(sf::RenderWindow &win, Game *game)
+    : window(win), game_(game)
+{
+    initFontInfo();
+    initShipPoints();
+    initOffscreenBuffer();
+}
 
 void GamePanel::update()
 {
@@ -37,6 +47,29 @@ void GamePanel::update()
     window.display();
 }
 
+void GamePanel::initFontInfo()
+{
+    auto font = AssetsLoader::instance()->useFont(GAME_PANEL_FONT_NAME);
+    if (font) {
+        text.setFont( *font.get() );
+        text.setCharacterSize(12);
+        text.setFillColor(sf::Color::White);
+    } else {
+        std::cout << "Font not loaded " << GAME_PANEL_FONT_NAME << "!";
+    }
+}
+
+void GamePanel::initShipPoints()
+{
+    pntShipsRemaining = {
+        {0, 9}, {-1, 6}, {-1, 3}, {-4, 1}, {4, 1}, {-4, 1}, {-4, -2}, {-1, -2}, {-1, -9},
+        {-1, -2}, {-4, -2}, {-10, -8}, {-5, -9}, {-7, -11}, {-4, -11}, {-2, -9}, {-2, -10},
+        {-1, -10}, {-1, -9}, {1, -9}, {1, -10}, {2, -10}, {2, -9}, {4, -11}, {7, -11},
+        {5, -9}, {10, -8}, {4, -2}, {1, -2}, {1, -9}, {1, -2}, {4, -2}, {4, 1}, {1, 3},
+        {1, 6}, {0, 9}
+    };
+}
+
 void GamePanel::initOffscreenBuffer()
 {
     offscreenBuffer.create(Game::DIM.x, Game::DIM.y);
@@ -52,8 +85,6 @@ void GamePanel::drawNumFrame()
 
 void GamePanel::drawFalconStatus()
 {
-    text.setFont(fontNormal);
-    text.setFillColor(sf::Color::White);
 
     // Score
     text.setString("Score: " + std::to_string(CommandCenter::getInstance()->getScore()));
@@ -134,4 +165,29 @@ void GamePanel::displayTextOnScreen(const std::vector<std::string> &lines)
         yOffset += 40;
         window.draw(text);
     }
+}
+
+void GamePanel::moveDrawMovables(const std::vector<std::list<std::shared_ptr<Movable> > > &teams)
+{
+    for (const auto& team : teams) {
+        for (const auto& movable : team) {
+            if (movable) {
+                movable->move();
+                movable->draw(window);
+            }
+        }
+    }
+
+    //Draw to minimap
+    window.setView(game_->miniMapView() );
+    window.draw(game_->miniMapBackground() );
+    for (const auto& team : teams) {
+        for (const auto& movable : team) {
+            if (dynamic_cast<Falcon*>(movable.get()) ||
+                dynamic_cast<Asteroid*>(movable.get())) {
+                movable->draw(window);  // Draw on mini-map only if Falcon or Asteroid
+            }
+        }
+    }
+    window.setView(window.getDefaultView());
 }

@@ -19,8 +19,8 @@ file(GLOB MVC_SRCS mvc/view/*.cpp
 add_executable(asteroid main.cpp ${MVC_SRCS}
     mvc/model/ShieldFloater.h mvc/model/ShieldFloater.cpp
     mvc/model/whiteclouddebris.h mvc/model/Asteroid.h
-    mvc/model/Brick.h mvc/model/Bullet.h mvc/model/Falcon.h
-    mvc/model/Floater.h mvc/model/Movable.h mvc/model/newwallFloater.h
+    mvc/model/Bullet.h mvc/model/Falcon.h
+    mvc/model/Floater.h mvc/model/Movable.h
     mvc/model/nuke.h mvc/model/NukeFloater.h mvc/model/PolarPoint.h
     mvc/model/Sprite.h mvc/model/Star.h
     mvc/controller/CommandCenter.h mvc/controller/Game.h
@@ -29,7 +29,9 @@ add_executable(asteroid main.cpp ${MVC_SRCS}
     mvc/model/whiteclouddebris.cpp
     mvc/model/nuke.cpp
     mvc/model/Floater.cpp
-    mvc/model/Brick.cpp)
+    mvc/controller/assetsloader.h mvc/controller/assetsloader.cpp
+
+)
 
 # Link SFML libraries to the executable
 target_link_libraries(asteroid sfml-graphics sfml-window sfml-system sfml-audio)

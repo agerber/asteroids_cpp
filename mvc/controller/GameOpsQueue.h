@@ -12,27 +12,13 @@ public:
     GameOpsQueue() = default;
 
     // Method to enqueue a GameOp with a movable object and an action
-    void enqueue(std::shared_ptr<Movable> mov, GameOp::Action action) {
-        std::lock_guard<std::mutex> lock(mutex);
-        queue.push(GameOp(mov, action));
-    }
+    void enqueue(std::shared_ptr<Movable> mov, GameOp::Action action);
 
     // Method to dequeue a GameOp
-    GameOp dequeue() {
-        std::lock_guard<std::mutex> lock(mutex);
-        if (queue.empty()) {
-            throw std::runtime_error("Attempted to dequeue from an empty queue.");
-        }
-        GameOp gameOp = queue.front();
-        queue.pop();
-        return gameOp;
-    }
+    GameOp dequeue();
 
     // Check if the queue is empty
-    bool isEmpty() const {
-        std::lock_guard<std::mutex> lock(mutex);
-        return queue.empty();
-    }
+    bool isEmpty() const;
 
 private:
     std::queue<GameOp> queue;  // Queue to hold GameOp objects

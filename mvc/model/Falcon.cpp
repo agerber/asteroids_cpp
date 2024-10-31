@@ -1,4 +1,5 @@
 #include "Falcon.h"
+#include "assetsloader.h"
 
 Falcon::Falcon()
 {
@@ -15,10 +16,10 @@ Falcon::Falcon()
     // Load images
     std::map<int, std::shared_ptr<sf::Texture>> rasterMap;
     rasterMap[static_cast<int>(ImageState::FALCON_INVISIBLE)] = nullptr;
-    rasterMap[static_cast<int>(ImageState::FALCON)] = loadGraphic("resources/imgs/fal/falcon125.png");
-    rasterMap[static_cast<int>(ImageState::FALCON_THR)] = loadGraphic("resources/imgs/fal/falcon125_thr.png");
-    rasterMap[static_cast<int>(ImageState::FALCON_PRO)] = loadGraphic("resources/imgs/fal/falcon125_PRO.png");
-    rasterMap[static_cast<int>(ImageState::FALCON_PRO_THR)] = loadGraphic("resources/imgs/fal/falcon125_PRO_thr.png");
+    rasterMap[static_cast<int>(ImageState::FALCON)] = AssetsLoader::instance()->getImage(TEXTURE_FALCON_FILE);
+    rasterMap[static_cast<int>(ImageState::FALCON_THR)] = AssetsLoader::instance()->getImage(TEXTURE_FALCON_THRUST_FILE);
+    rasterMap[static_cast<int>(ImageState::FALCON_PRO)] = AssetsLoader::instance()->getImage(TEXTURE_FALCON_PRO_FILE);
+    rasterMap[static_cast<int>(ImageState::FALCON_PRO_THR)] = AssetsLoader::instance()->getImage(TEXTURE_FALCON_PRO_THRUST_FILE);
 
     setRasterMap( rasterMap );
 }
