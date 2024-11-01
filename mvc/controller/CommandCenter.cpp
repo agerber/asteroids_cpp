@@ -9,6 +9,9 @@ CommandCenter::CommandCenter()
     for (int i = 0; i < 5; ++i) {
         soundThreads.emplace_back(&CommandCenter::soundThreadWorker, this);
     }
+
+    miniMap = std::make_shared<MiniMap>();
+    setRadar(true);
 }
 
 CommandCenter::~CommandCenter()
@@ -43,16 +46,27 @@ CommandCenter *CommandCenter::getInstance()
     return instance;
 }
 
+void CommandCenter::setDimHash() {
+    miniDimHash[Universe::FREE_FLY] = sf::Vector2u(1, 1);
+    miniDimHash[Universe::CENTER] = sf::Vector2u(1, 1);
+    miniDimHash[Universe::BIG] = sf::Vector2u(2, 2);
+    miniDimHash[Universe::HORIZONTAL] = sf::Vector2u(3, 1);
+    miniDimHash[Universe::VERTICAL] = sf::Vector2u(1, 3);
+    miniDimHash[Universe::DARK] = sf::Vector2u(4, 4);
+}
+
 void CommandCenter::initGame()
 {
     clearAll();
     generateStarField();
+    setDimHash();
     level = 0;
     score = 0;
     paused = false;
     numFalcons = 4;
     initFalconAndDecrementFalconNum();
     opsQueue.enqueue(falcon, GameOp::Action::ADD);
+    opsQueue.enqueue(miniMap, GameOp::Action::ADD);
 }
 
 void CommandCenter::generateStarField()
@@ -101,4 +115,14 @@ bool CommandCenter::isGameOver() const
 Falcon *CommandCenter::getFalcon() const
 {
     return falcon.get();
+}
+
+sf::Vector2u CommandCenter::getUniDim() const
+{
+    auto it = miniDimHash.find(universe);
+    if (it != miniDimHash.end()) {
+        return it->second;
+    }
+    // Default dimension if universe is not found
+    return sf::Vector2u(800, 600);
 }

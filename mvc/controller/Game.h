@@ -22,22 +22,7 @@
 class Asteroid;
 class Game {
 public:
-    Game() :
-        window(sf::VideoMode(1100, 900), "Asteroid"),
-        gamePanel(window, this),
-        isRunning(true),
-        animationThread(&Game::runAnimations, this),
-        gameStarted(false)
-    {
-        // Load sounds
-        thrustBuffer.loadFromFile(sound_files_path + "whitenoise.wav");
-        backgroundBuffer.loadFromFile(sound_files_path + "music-background.wav");
-        soundThrust.setBuffer(thrustBuffer);
-        soundBackground.setBuffer(backgroundBuffer);
-
-        // Start the animation thread
-        animationThread.launch();
-    }
+    Game();
 
     static std::mt19937 R;
     static int nextInt(int bound) {
@@ -64,8 +49,6 @@ private:
     bool gameStarted;
     sf::View miniMapView_;
     sf::RectangleShape miniMapBackground_;
-
-    void setupMiniMap();
 
     float getDistance(const sf::Vector2<float> vec1, const sf::Vector2<float> vec2)
     {

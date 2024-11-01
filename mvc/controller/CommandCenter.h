@@ -13,40 +13,19 @@
 #include "GameOpsQueue.h"
 #include "Star.h"
 #include "Sound.h"
+#include "minimap.h"
 
 class CommandCenter {
-private:
-    int numFalcons;
-    int level;
-    long score;
-    bool paused;
-    bool muted;
-    std::atomic<long> frame;
-
-    std::shared_ptr<Falcon> falcon;
-    std::list<std::shared_ptr<Movable>> movDebris;
-    std::list<std::shared_ptr<Movable>> movFriends;
-    std::list<std::shared_ptr<Movable>> movFoes;
-    std::list<std::shared_ptr<Movable>> movFloaters;
-
-    GameOpsQueue opsQueue;
-    std::vector<std::thread> soundThreads;
-    std::queue<std::string> soundQueue;
-    std::mutex soundMutex;
-    std::condition_variable soundCondVar;
-    bool terminateSoundThreads = false;
-
-    static CommandCenter* instance;
-
-    // Private constructor for Singleton pattern
-    CommandCenter();
-
-    ~CommandCenter();
-
-    // Worker thread for playing sounds
-    void soundThreadWorker();
-
 public:
+    enum class Universe {
+        FREE_FLY,
+        CENTER,
+        BIG,
+        HORIZONTAL,
+        VERTICAL,
+        DARK
+    };
+
     std::list<std::shared_ptr<Movable>>& getMovFoes() { return movFoes; }
     std::list<std::shared_ptr<Movable>>& getMovFriends() { return movFriends; }
     std::list<std::shared_ptr<Movable>>& getMovFloaters() { return movFloaters; }
@@ -76,6 +55,49 @@ public:
     long getFrame() const { return frame; }
     Falcon* getFalcon() const;
     GameOpsQueue& getOpsQueue() { return opsQueue; }
+
+    void setUniverse(Universe newUniverse) { universe = newUniverse; }
+    sf::Vector2u getUniDim() const;
+
+    bool isRadar() const { return _isRadar; }
+    void setRadar(bool val) { _isRadar = val; }
+private:
+    int numFalcons;
+    int level;
+    long score;
+    bool paused;
+    bool muted;
+    std::atomic<long> frame;
+    bool _isRadar;
+    std::shared_ptr<MiniMap> miniMap;
+
+    std::shared_ptr<Falcon> falcon;
+    std::list<std::shared_ptr<Movable>> movDebris;
+    std::list<std::shared_ptr<Movable>> movFriends;
+    std::list<std::shared_ptr<Movable>> movFoes;
+    std::list<std::shared_ptr<Movable>> movFloaters;
+
+    GameOpsQueue opsQueue;
+    std::vector<std::thread> soundThreads;
+    std::queue<std::string> soundQueue;
+    std::mutex soundMutex;
+    std::condition_variable soundCondVar;
+    bool terminateSoundThreads = false;
+
+    static CommandCenter* instance;
+
+    // Private constructor for Singleton pattern
+    CommandCenter();
+
+    ~CommandCenter();
+
+    // Worker thread for playing sounds
+    void soundThreadWorker();
+
+    Universe universe;
+    std::unordered_map<Universe, sf::Vector2u> miniDimHash;
+
+    void setDimHash();
 };
 
 

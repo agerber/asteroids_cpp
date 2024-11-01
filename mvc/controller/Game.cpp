@@ -7,6 +7,20 @@ const sf::Vector2u Game::DIM(1100, 900);
 std::mt19937 Game::R(std::random_device{}());
 
 
+Game::Game()
+    : window(sf::VideoMode(1100, 900), "Asteroid"), gamePanel(window, this), isRunning(true),
+     animationThread(&Game::runAnimations, this), gameStarted(false)
+{
+    // Load sounds
+    thrustBuffer.loadFromFile(sound_files_path + "whitenoise.wav");
+    backgroundBuffer.loadFromFile(sound_files_path + "music-background.wav");
+    soundThrust.setBuffer(thrustBuffer);
+    soundBackground.setBuffer(backgroundBuffer);
+
+    // Start the animation thread
+    animationThread.launch();
+}
+
 const int Game::FRAMES_PER_SECOND()
 {
     const int FPS = 1000 / ANIMATION_DELAY;
@@ -15,8 +29,6 @@ const int Game::FRAMES_PER_SECOND()
 
 void Game::run()
 {
-    setupMiniMap();
-
     while (isRunning && window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -52,20 +64,6 @@ void Game::runAnimations()
     }
 }
 
-void Game::setupMiniMap()
-{
-    sf::FloatRect worldBounds(0, 0, DIM.x, DIM.y);  // Bind to actual world bounds
-    miniMapView_.setSize(worldBounds.width, worldBounds.height);
-    miniMapView_.setCenter(worldBounds.width / 2, worldBounds.height / 2);
-
-    //put minimap on bottom left
-    miniMapView_.setViewport(sf::FloatRect(0.02f, 0.78f, 0.2f, 0.2f));
-
-    // Set up the black background for the mini-map
-    miniMapBackground_.setSize(sf::Vector2f(220.0f, 180.0f)); //
-    miniMapBackground_.setFillColor(sf::Color::Black);
-    miniMapBackground_.setPosition(20.0f, Game::DIM.y - miniMapBackground_.getSize().y - 20.0f); //margin
-}
 
 
 void Game::handlekeyPressed(const sf::Event &event)

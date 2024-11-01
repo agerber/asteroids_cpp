@@ -177,17 +177,4 @@ void GamePanel::moveDrawMovables(const std::vector<std::list<std::shared_ptr<Mov
             }
         }
     }
-
-    //Draw to minimap
-    window.setView(game_->miniMapView() );
-    window.draw(game_->miniMapBackground() );
-    for (const auto& team : teams) {
-        for (const auto& movable : team) {
-            if (dynamic_cast<Falcon*>(movable.get()) ||
-                dynamic_cast<Asteroid*>(movable.get())) {
-                movable->draw(window);  // Draw on mini-map only if Falcon or Asteroid
-            }
-        }
-    }
-    window.setView(window.getDefaultView());
 }
