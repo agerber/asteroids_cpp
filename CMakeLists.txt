@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.22)
+include(FetchContent)
 
 # Set the project name
 project(asteroid)
@@ -7,8 +8,16 @@ project(asteroid)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find the SFML package
-find_package(SFML 2.5 COMPONENTS graphics window system audio REQUIRED)
+set(SFML_VERSION "2.6.x")
+
+# Fetch the SFML package
+FetchContent_Declare(
+    sfml
+    GIT_REPOSITORY "https://github.com/SFML/SFML.git"
+    GIT_TAG        "${SFML_VERSION}"
+)
+
+FetchContent_MakeAvailable(SFML)
 
 # Gather source files
 file(GLOB MVC_SRCS mvc/view/*.cpp
@@ -43,3 +52,7 @@ target_include_directories(asteroid PRIVATE
     mvc/view
     asteroid
     ${SFML_INCLUDE_DIRS})
+
+add_custom_target(copy-runtime-files ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/resources ${CMAKE_BINARY_DIR}/resources
+    DEPENDS asteroid)
