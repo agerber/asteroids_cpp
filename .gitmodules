@@ -1,0 +1,3 @@
+[submodule "Streams"]
+	path = Streams
+	url = https://github.com/jscheiny/Streams.git
