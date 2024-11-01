@@ -12,8 +12,21 @@
     chmod +x build_mac.sh  # for mac
     chmod +x build_linux.sh  # for linux
     ```
+3. Clean the build dir.
+```bash
+# Check if the build directory exists
+if [ -d "build" ]; then
+  echo "Deleting the build directory..."
+  rm -rf build
+  echo "Build directory deleted."
+else
+  echo "Build directory does not exist."
+fi
 
-3. Run the build script:
+```
+
+
+4. Run the build script:
     - **macOS:**
       ```bash
       ./build_mac.sh
@@ -22,7 +35,7 @@
       ```bash
       ./build_linux.sh
       ```
-4. Execute the executable:
+5. Execute the executable:
    ```bash
       build/asteroid
    ```
