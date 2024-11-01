@@ -1,4 +1,4 @@
-#include "whiteclouddebris.h"
+#include "WhiteCloudDebris.h"
 #include "assetsloader.h"
 
 WhiteCloudDebris::WhiteCloudDebris(Sprite *explodingSprite)

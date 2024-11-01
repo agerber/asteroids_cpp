@@ -18,14 +18,14 @@ file(GLOB MVC_SRCS mvc/view/*.cpp
 # Create the executable
 add_executable(asteroid main.cpp ${MVC_SRCS}
     mvc/model/ShieldFloater.h mvc/model/ShieldFloater.cpp
-    mvc/model/whiteclouddebris.h mvc/model/Asteroid.h
+    mvc/model/WhiteCloudDebris.h mvc/model/Asteroid.h
     mvc/model/Bullet.h mvc/model/Falcon.h
     mvc/model/Floater.h mvc/model/Movable.h
-    mvc/model/nuke.h mvc/model/NukeFloater.h mvc/model/PolarPoint.h
+    mvc/model/Nuke.h mvc/model/NukeFloater.h mvc/model/PolarPoint.h
     mvc/model/Sprite.h mvc/model/Star.h
     mvc/controller/CommandCenter.h mvc/controller/Game.h
     mvc/controller/GameOp.h mvc/controller/GameOpsQueue.h
-    mvc/controller/utils.h mvc/view/GameFrame.h mvc/view/GamePanel.h
+    mvc/controller/Utils.h mvc/view/GameFrame.h mvc/view/GamePanel.h
     mvc/model/whiteclouddebris.cpp
     mvc/model/nuke.cpp
     mvc/model/Floater.cpp

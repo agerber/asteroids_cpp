@@ -1,5 +1,6 @@
 #include "CommandCenter.h"
 #include "Game.h"
+#include <climits>
 
 CommandCenter* CommandCenter::instance = nullptr;
 
