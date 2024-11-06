@@ -9,15 +9,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SFML_VERSION "2.6.x")
-
 # Fetch the SFML package
 FetchContent_Declare(
-    sfml
+   sfml
     GIT_REPOSITORY "https://github.com/SFML/SFML.git"
     GIT_TAG        "${SFML_VERSION}"
 )
 
 FetchContent_MakeAvailable(SFML)
+#find_package(SFML 2.5 COMPONENTS graphics window system audio REQUIRED)
 
 # Gather source files
 file(GLOB MVC_SRCS mvc/view/*.cpp
@@ -39,7 +39,7 @@ add_executable(asteroid main.cpp ${MVC_SRCS}
     mvc/model/nuke.cpp
     mvc/model/Floater.cpp
     mvc/controller/assetsloader.h mvc/controller/assetsloader.cpp
-
+    mvc/model/collisions.h
 )
 
 # Link SFML libraries to the executable
