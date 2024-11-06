@@ -182,8 +182,8 @@ void Game::checkCollisions() {
 
   auto falcon = CommandCenter::getInstance()->getFalcon();
   for (auto& movFloater : CommandCenter::getInstance()->getMovFloaters()) {
-    if (getDistance(falcon->getCenter(), movFloater->getCenter()) <
-        (falcon->getRadius() + movFloater->getRadius())) {
+    Collisions collision{falcon, movFloater};
+    if (collision.intersect()) {
       if (dynamic_cast<ShieldFloater*>(movFloater.get())) {
         Sound::instance()->playSound(SOUND_SHIELD_UP);
         falcon->setShield(Falcon::MAX_SHIELD);
