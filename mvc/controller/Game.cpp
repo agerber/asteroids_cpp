@@ -7,7 +7,6 @@
 
 const sf::Vector2u Game::DIM(1100, 900);
 std::mt19937 Game::R(std::random_device{}());
-
 Game::Game()
     : window(sf::VideoMode(1100, 900), "Asteroid"),
       gamePanel(window, this),
@@ -52,6 +51,18 @@ void Game::run() {
     // Control frame rate
     sf::sleep(sf::milliseconds(ANIMATION_DELAY));
   }
+}
+
+int Game::nextInt(int bound) {
+  std::uniform_int_distribution<int> dist(0, bound - 1);
+  return dist(R);
+}
+
+float Game::getDistance(const sf::Vector2<float> vec1,
+                        const sf::Vector2<float> vec2) {
+  sf::Vector2f diff = vec1 - vec2;
+  float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+  return distance;
 }
 
 void Game::runAnimations() {
@@ -292,6 +303,7 @@ void Game::spawnSmallerAsteroidsOrDebris(
   int size = originalAsteroid->getSize();
   // small asteroids
   if (size > 1) {
+    //std::cout << "WhiteCloudDebris" << std::endl;
     auto wcd = std::make_shared<WhiteCloudDebris>(originalAsteroid.get());
     CommandCenter::getInstance()->getOpsQueue().enqueue(wcd,
                                                         GameOp::Action::ADD);

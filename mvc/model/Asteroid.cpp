@@ -33,6 +33,7 @@ Asteroid::Asteroid(const Asteroid &astExploded)
 {
     setCenter(astExploded.getCenter());
     int newSmallerSize = astExploded.getSize() + 1;
+    setSize(newSmallerSize);
     // Adjust speed based on the size of the new smaller asteroid
     double delta_x = astExploded.getDeltaX() / 1.5 + somePosNegValue(5 + newSmallerSize * 2);
     double delta_y = astExploded.getDeltaY() / 1.5 + somePosNegValue(5 + newSmallerSize * 2);

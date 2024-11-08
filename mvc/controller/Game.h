@@ -24,10 +24,7 @@ class Game {
   Game();
 
   static std::mt19937 R;
-  static int nextInt(int bound) {
-    std::uniform_int_distribution<int> dist(0, bound - 1);
-    return dist(R);
-  }
+  static int nextInt(int bound);
   static const int FRAMES_PER_SECOND();
 
   void run();
@@ -50,11 +47,7 @@ class Game {
   sf::RectangleShape miniMapBackground_;
 
   float getDistance(const sf::Vector2<float> vec1,
-                    const sf::Vector2<float> vec2) {
-    sf::Vector2f diff = vec1 - vec2;
-    float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
-    return distance;
-  }
+                    const sf::Vector2<float> vec2);
 
   void handlekeyPressed(const sf::Event& event);
   void handlekeyRelease(const sf::Event& event);

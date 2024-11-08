@@ -13,7 +13,7 @@
 
 class Asteroid : public Sprite {
 private:
-    const int LARGE_RADIUS = 110;
+    const int LARGE_RADIUS = 55;
     void setSize(int size);
 
 public:
