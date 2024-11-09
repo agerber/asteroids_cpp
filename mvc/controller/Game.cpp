@@ -75,7 +75,6 @@ float Game::getDistance(const sf::Vector2<float> vec1,
   return distance;
 }
 
-
 void Game::handlekeyPressed(const sf::Event& event) {
   Falcon* falcon = CommandCenter::getInstance()->getFalcon();
 
@@ -114,22 +113,13 @@ void Game::handlekeyPressed(const sf::Event& event) {
       falcon->setTurnState(Falcon::TurnState::RIGHT);
       break;
     }
+    case sf::Keyboard::A: {
+      CommandCenter::getInstance()->setRadar(
+          !CommandCenter::getInstance()->isRadar());
+      break;
+    }
   }
 }
-
-/**
-    private static final int
-            PAUSE = 80, // p key
-            QUIT = 81, // q key
-            LEFT = 37, // rotate left; left arrow
-            RIGHT = 39, // rotate right; right arrow
-            UP = 38, // thrust; up arrow
-            START = 83, // s key
-            FIRE = 32, // space key
-            MUTE = 77, // m-key mute
-
-            NUKE = 78; // n-key mute
- */
 
 void Game::handlekeyRelease(const sf::Event& event) {
   CommandCenter* cm = CommandCenter::getInstance();
@@ -296,7 +286,7 @@ void Game::spawnSmallerAsteroidsOrDebris(
   int size = originalAsteroid->getSize();
   // small asteroids
   if (size > 1) {
-    //std::cout << "WhiteCloudDebris" << std::endl;
+    // std::cout << "WhiteCloudDebris" << std::endl;
     auto wcd = std::make_shared<WhiteCloudDebris>(originalAsteroid.get());
     CommandCenter::getInstance()->getOpsQueue().enqueue(wcd,
                                                         GameOp::Action::ADD);

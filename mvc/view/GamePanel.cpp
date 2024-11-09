@@ -26,7 +26,8 @@ void GamePanel::update()
             "'S' to Start",
             "'P' to Pause",
             "'Q' to Quit",
-            "'M' to toggle music"
+            "'M' to toggle music",
+            "'A' to toggle radar"
         });
     } else if (CommandCenter::getInstance()->isPaused()) {
         displayTextOnScreen({"Game Paused"});
