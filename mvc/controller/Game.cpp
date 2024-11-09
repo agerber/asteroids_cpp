@@ -141,14 +141,6 @@ void Game::handlekeyRelease(const sf::Event& event) {
       cm->getOpsQueue().enqueue(bullet, GameOp::Action::ADD);
       break;
     }
-    case sf::Keyboard::P: {
-      CommandCenter::getInstance()->setPaused(
-          !CommandCenter::getInstance()->isPaused());
-      if (CommandCenter::getInstance()->isPaused()) {
-        stopLoopingSounds(soundBackground, soundThrust);
-      }
-      break;
-    }
     case sf::Keyboard::N: {
       if (falcon->getNukeMeter() > 0) {
         std::shared_ptr<Nuke> nuke = std::make_shared<Nuke>(*falcon);

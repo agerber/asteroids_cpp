@@ -38,9 +38,9 @@ void GamePanel::update()
             CommandCenter::getInstance()->getMovFriends()
         });
 
-        drawNumberShipsRemaining();
-        drawMeters();
-        drawFalconStatus();
+        //drawNumberShipsRemaining();
+        //drawMeters();
+        //drawFalconStatus();
     }
 
     // Display the offscreen buffer
