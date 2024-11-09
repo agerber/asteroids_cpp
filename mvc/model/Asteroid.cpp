@@ -49,10 +49,7 @@ int Asteroid::getSize() const
     else if (getRadius() == LARGE_RADIUS / 2) {
         return 1;
     }
-    else if (getRadius() == LARGE_RADIUS / 4) {
-        return 2;
-    }
-    return 0;
+    return 2;
 }
 
 std::vector<sf::Vector2f> Asteroid::generateVertices()

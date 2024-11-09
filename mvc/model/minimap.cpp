@@ -90,7 +90,7 @@ void MiniMap::draw(sf::RenderWindow &window)
         blip.setFillColor(color);
         window.draw(blip);
     }
-    std::cout << "MiniMap::draw" << std::endl;
+    //std::cout << "MiniMap::draw" << std::endl;
 }
 
 sf::Vector2f MiniMap::translatePoint(const sf::Vector2f &point) const
