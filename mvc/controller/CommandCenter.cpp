@@ -13,6 +13,7 @@ CommandCenter::CommandCenter()
 
     miniMap = std::make_shared<MiniMap>();
     setRadar(true);
+    setUniverse(Universe::FREE_FLY);
 }
 
 CommandCenter::~CommandCenter()
@@ -122,6 +123,7 @@ sf::Vector2u CommandCenter::getUniDim() const
 {
     auto it = miniDimHash.find(universe);
     if (it != miniDimHash.end()) {
+        // std::cout << "getUniDim()" << std::endl;
         return it->second;
     }
     // Default dimension if universe is not found

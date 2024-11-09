@@ -9,7 +9,7 @@ const sf::Color DARK_GRAY(64, 64, 64);
 void MiniMap::draw(sf::RenderWindow &window)
 {
     if (!CommandCenter::getInstance()->isRadar()) return;
-
+    
     // Get the aspect ratio to adjust for non-square universes
     aspectRatio = aspectAdjustedRatio(CommandCenter::getInstance()->getUniDim());
 
@@ -90,6 +90,7 @@ void MiniMap::draw(sf::RenderWindow &window)
         blip.setFillColor(color);
         window.draw(blip);
     }
+    std::cout << "MiniMap::draw" << std::endl;
 }
 
 sf::Vector2f MiniMap::translatePoint(const sf::Vector2f &point) const

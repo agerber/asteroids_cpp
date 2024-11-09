@@ -42,9 +42,11 @@ private:
     const sf::Color LIGHT_GRAY = sf::Color(200, 200, 200);
 
 public:
-    MiniMap() {}
+    MiniMap() {
+        setTeam(Team::DEBRIS);
+    }
 
-    void move() {}
+    void move() override{}
 
     void draw(sf::RenderWindow& window) override;
 

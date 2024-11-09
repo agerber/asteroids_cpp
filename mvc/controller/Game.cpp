@@ -38,7 +38,7 @@ void Game::run() {
         std::cout << "Key pressed" << std::endl;
         handlekeyPressed(event);
       } else if (event.type == sf::Event::KeyReleased) {
-        std::cout << "Key pressed" << std::endl;
+        std::cout << "Key released" << std::endl;
         handlekeyRelease(event);
       }
     }
@@ -48,6 +48,16 @@ void Game::run() {
 
     CommandCenter::getInstance()->incrementFrame();
 
+    // Control frame rate
+    sf::sleep(sf::milliseconds(ANIMATION_DELAY));
+  }
+}
+
+void Game::runAnimations() {
+  while (isRunning && window.isOpen()) {
+    checkCollisions();
+    checkNewLevel();
+    CommandCenter::getInstance()->incrementFrame();
     // Control frame rate
     sf::sleep(sf::milliseconds(ANIMATION_DELAY));
   }
@@ -65,15 +75,6 @@ float Game::getDistance(const sf::Vector2<float> vec1,
   return distance;
 }
 
-void Game::runAnimations() {
-  while (isRunning && window.isOpen()) {
-    checkCollisions();
-    checkNewLevel();
-    CommandCenter::getInstance()->incrementFrame();
-    // Control frame rate
-    sf::sleep(sf::milliseconds(ANIMATION_DELAY));
-  }
-}
 
 void Game::handlekeyPressed(const sf::Event& event) {
   Falcon* falcon = CommandCenter::getInstance()->getFalcon();
