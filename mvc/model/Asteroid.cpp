@@ -81,7 +81,7 @@ std::vector<sf::Vector2f> Asteroid::generateVertices() {
   };
 
   // Generate a random number of vertices
-  int VERTICES = /*(Game::nextInt(7) +*/85;
+  int VERTICES = Game::nextInt(7) + 25;
 
   // Generate, sort, and convert polar points to cartesian coordinates
   std::vector<PolarPoint> polarPoints;
