@@ -26,13 +26,10 @@ std::vector<PolarPoint> Utils::cartesianToPolar(std::vector<sf::Vector2f> pntCar
     };
 
     // Find the largest hypotenuse
-    const double LARGEST_HYP = std::max_element(pntCartesians.begin(), pntCartesians.end(),
-                                                [&, hypotenuseOfPoint](const sf::Vector2f& left, const sf::Vector2f& right) {
-                                                    return hypotenuseOfPoint(left) < hypotenuseOfPoint(right);
-                                                })->x + std::max_element(pntCartesians.begin(), pntCartesians.end(),
-                                                  [&, hypotenuseOfPoint](const sf::Vector2f& left, const sf::Vector2f& right) {
-                                                      return hypotenuseOfPoint(left) < hypotenuseOfPoint(right);
-                                                  })->y;
+    const double LARGEST_HYP = hypotenuseOfPoint(*std::max_element(pntCartesians.begin(), pntCartesians.end(),
+                                                    [&, hypotenuseOfPoint](const sf::Vector2f& left, const sf::Vector2f& right) {
+                                                        return hypotenuseOfPoint(left) < hypotenuseOfPoint(right);
+                                                    }));
 
     // Lambda to convert Cartesian points to Polar
     auto cartToPolarTransform = [&hypotenuseOfPoint, &LARGEST_HYP](const sf::Vector2f& pnt) -> PolarPoint {

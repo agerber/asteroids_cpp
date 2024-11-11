@@ -38,17 +38,13 @@ void Game::run() {
         std::cout << "Key pressed" << std::endl;
         handlekeyPressed(event);
       } else if (event.type == sf::Event::KeyReleased) {
-        std::cout << "Key released" << std::endl;
+        //std::cout << "Key released" << std::endl;
         handlekeyRelease(event);
       }
     }
-    // handleInput();
     window.clear();
     gamePanel.update();
-
     CommandCenter::getInstance()->incrementFrame();
-
-    // Control frame rate
     sf::sleep(sf::milliseconds(ANIMATION_DELAY));
   }
 }
@@ -57,8 +53,8 @@ void Game::runAnimations() {
   while (isRunning && window.isOpen()) {
     checkCollisions();
     checkNewLevel();
+    processGameOpsQueue();
     CommandCenter::getInstance()->incrementFrame();
-    // Control frame rate
     sf::sleep(sf::milliseconds(ANIMATION_DELAY));
   }
 }
@@ -189,8 +185,6 @@ void Game::checkCollisions() {
           movFloater, GameOp::Action::REMOVE);
     }
   }
-
-  processGameOpsQueue();
 }
 
 void Game::checkNewLevel() {
@@ -202,7 +196,10 @@ void Game::checkNewLevel() {
     CommandCenter::getInstance()->setLevel(level);
     auto falcon = CommandCenter::getInstance()->getFalcon();
     if (falcon) {
-      spawnBigAsteroids(level);
+      for (int i = 0; i < 1; ++i)
+      {
+        spawnBigAsteroids(level);
+      }
       falcon->setShield(Falcon::INITIAL_SPAWN_TIME);
       falcon->setShowLevel(Falcon::INITIAL_SPAWN_TIME);
     }
@@ -226,11 +223,14 @@ void Game::processGameOpsQueue() {
         if (action == GameOp::Action::ADD) {
           CommandCenter::getInstance()->getMovFoes().push_back(mov);
         } else {
-          auto vec = cm->getMovFoes();
-          CommandCenter::getInstance()->getMovFoes().remove(mov);
+          //auto vec = cm->getMovFoes();
           if (auto ast = std::dynamic_pointer_cast<Asteroid>(mov)) {
-            spawnSmallerAsteroidsOrDebris(ast);
+            for (int i = 0; i < 1; ++i)
+            {
+              spawnSmallerAsteroidsOrDebris(ast);
+            }
           }
+          CommandCenter::getInstance()->getMovFoes().remove(mov);
           mov.reset();
         }
         break;
