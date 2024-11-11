@@ -19,8 +19,8 @@ Asteroid::Asteroid(int size) {
 
   // Set random spin and deltas
   setSpin(somePosNegValue(10));
-  //setDeltaX(somePosNegValue(10));
-  //setDeltaY(somePosNegValue(10));
+  setDeltaX(somePosNegValue(10));
+  setDeltaY(somePosNegValue(10));
 
   // Generate cartesian points representing vertices
   std::vector<sf::Vector2f> vertices = generateVertices();
@@ -58,11 +58,7 @@ int Asteroid::getSize() const {
 
 std::vector<sf::Vector2f> Asteroid::generateVertices() {
   const int MAX_RADIANS_X1000 = 6283;
-  //const double PRECISION = 100.0;
- if (getRadius() > 100)
- {
-      std::cout << "getRadius(): " << getRadius() << std::endl;
- }
+  //const double PRECISION = 100.0
 
   // Lambda to generate random polar points
   auto polarPointSupplier = []() -> PolarPoint {
